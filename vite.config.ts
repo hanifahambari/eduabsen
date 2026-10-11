@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
 
   return {
+    envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     plugins: [
       react(),
       tailwindcss(),
