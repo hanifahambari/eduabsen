@@ -1,9 +1,5 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+import { supabaseAdmin } from '../_lib/supabaseAdmin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id, rombel } = req.query;
@@ -20,6 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .single();
 
       if (error) {
+        console.error('[GET /api/students/:id] Supabase error:', error);
         if (error.code === 'PGRST116') {
           return res.status(404).json({ error: 'Student not found' });
         }
@@ -36,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data, error } = await query;
 
     if (error) {
+      console.error('[GET /api/students] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(200).json(data || []);
@@ -50,6 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error) {
+      console.error('[POST /api/students] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(201).json(data);
@@ -65,6 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error) {
+      console.error('[PUT/PATCH /api/students/:id] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(200).json(data);
@@ -78,6 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('id', id);
 
     if (error) {
+      console.error('[DELETE /api/students/:id] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(204).send('');

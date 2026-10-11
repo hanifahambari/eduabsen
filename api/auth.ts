@@ -1,9 +1,5 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+import { supabaseAdmin } from '../_lib/supabaseAdmin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -26,6 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .maybeSingle();
 
   if (error) {
+    console.error('[POST /api/auth] Supabase error:', error);
     return res.status(500).json({ error: error.message });
   }
 
@@ -53,11 +50,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  // Update last login
-  await supabaseAdmin
-    .from('user_accounts')
-    .update({ last_login: new Date().toISOString() })
-    .eq('id', account.id);
+  // Update last login (fire-and-forget with error handling)
+  try {
+    await supabaseAdmin
+      .from('user_accounts')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', account.id);
+  } catch (updateErr) {
+    console.error('[POST /api/auth] Failed to update last_login:', updateErr);
+  }
 
   const user = {
     id: account.target_id || account.id,
@@ -67,8 +68,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     identifier: account.identifier,
     mapel: account.mapel,
     rombel: account.rombel,
-    is_wali_kelas: account.is_wali_kelas,
-    wali_kelas_rombel: account.wali_kelas_rombel,
+    is_wali Kelas: account.is_wali Kelas,
+    wali Kelas_rombel: account.wali Kelas_rombel,
     is_logged_in: true,
   };
 

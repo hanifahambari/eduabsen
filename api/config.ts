@@ -1,9 +1,5 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+import { supabaseAdmin } from '../_lib/supabaseAdmin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { type } = req.query;
@@ -36,6 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data, error } = await query;
 
     if (error) {
+      console.error('[GET /api/config] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(200).json(data || []);
@@ -50,6 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error) {
+      console.error('[POST /api/config] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(201).json(data);
@@ -65,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error) {
+      console.error('[PUT/PATCH /api/config] Supabase error:', error);
       return res.status(500).json({ error: error.message });
     }
     return res.status(200).json(data);

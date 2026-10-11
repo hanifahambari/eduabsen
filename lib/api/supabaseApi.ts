@@ -33,9 +33,17 @@ export async function getConfig(): Promise<MadrasahConfig | null> {
 }
 
 export async function updateConfig(config: Partial<MadrasahConfig>): Promise<MadrasahConfig> {
-  const { data, error } = await supabase.from('madrasah_config').upsert(config).select().single();
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase.from('madrasah_config').upsert(config).select().single();
+    if (error) {
+      console.error('[updateConfig] Supabase error:', error);
+      throw error;
+    }
+    return data;
+  } catch (err) {
+    console.error('[updateConfig] Unexpected error:', err);
+    throw err;
+  }
 }
 
 export async function getSchedule(): Promise<ScheduleConfig | null> {
@@ -45,9 +53,17 @@ export async function getSchedule(): Promise<ScheduleConfig | null> {
 }
 
 export async function updateSchedule(schedule: Partial<ScheduleConfig>): Promise<ScheduleConfig> {
-  const { data, error } = await supabase.from('schedule_config').upsert(schedule).select().single();
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase.from('schedule_config').upsert(schedule).select().single();
+    if (error) {
+      console.error('[updateSchedule] Supabase error:', error);
+      throw error;
+    }
+    return data;
+  } catch (err) {
+    console.error('[updateSchedule] Unexpected error:', err);
+    throw err;
+  }
 }
 
 export async function getHolidays(): Promise<Holiday[]> {

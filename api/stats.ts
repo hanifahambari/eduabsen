@@ -1,9 +1,5 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+import { supabaseAdmin } from '../_lib/supabaseAdmin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -45,6 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       attendance: attendanceStats,
     });
   } catch (error) {
+    console.error('[GET /api/stats] Unexpected error:', error);
     return res.status(500).json({ error: 'Failed to fetch stats' });
   }
 }
