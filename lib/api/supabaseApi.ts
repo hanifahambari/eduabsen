@@ -18,6 +18,58 @@ import type {
   ChangePasswordResult,
 } from '../../types';
 
+class ApiRequestError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
+async function apiRequest<T>(path: string, method: string, body?: unknown): Promise<T> {
+  const response = await fetch(path, {
+    method,
+    credentials: 'same-origin',
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const responseText = response.status === 204 ? '' : await response.text();
+  let result: { error?: string; code?: string } | T | null = null;
+  if (responseText) {
+    try {
+      result = JSON.parse(responseText) as { error?: string; code?: string } | T;
+    } catch {
+      result = null;
+    }
+  }
+  if (!response.ok) {
+    const failure = result && typeof result === 'object' && 'error' in result ? result : null;
+    const message = failure?.error || `Request failed with status ${response.status}`;
+    console.error('api.mutation_failed', {
+      path,
+      method,
+      status: response.status,
+      code: failure?.code,
+      message,
+    });
+    throw new ApiRequestError(message, response.status);
+  }
+  return result as T;
+}
+
+async function apiRead<T>(path: string, unauthenticatedValue: T): Promise<T> {
+  try {
+    return await apiRequest<T>(path, 'GET');
+  } catch (error) {
+    if (error instanceof ApiRequestError && [401, 403].includes(error.status)) {
+      return unauthenticatedValue;
+    }
+    throw error;
+  }
+}
+
+function withId(path: string, id: string): string {
+  return `${path}${path.includes('?') ? '&' : '?'}id=${encodeURIComponent(id)}`;
+}
+
 export function getTodayDateString(): string {
   return new Date().toISOString().split('T')[0];
 }
@@ -33,17 +85,7 @@ export async function getConfig(): Promise<MadrasahConfig | null> {
 }
 
 export async function updateConfig(config: Partial<MadrasahConfig>): Promise<MadrasahConfig> {
-  try {
-    const { data, error } = await supabase.from('madrasah_config').upsert(config).select().single();
-    if (error) {
-      console.error('[updateConfig] Supabase error:', error);
-      throw error;
-    }
-    return data;
-  } catch (err) {
-    console.error('[updateConfig] Unexpected error:', err);
-    throw err;
-  }
+  return apiRequest('/api/config?type=madrasah', 'PUT', config);
 }
 
 export async function getSchedule(): Promise<ScheduleConfig | null> {
@@ -53,17 +95,7 @@ export async function getSchedule(): Promise<ScheduleConfig | null> {
 }
 
 export async function updateSchedule(schedule: Partial<ScheduleConfig>): Promise<ScheduleConfig> {
-  try {
-    const { data, error } = await supabase.from('schedule_config').upsert(schedule).select().single();
-    if (error) {
-      console.error('[updateSchedule] Supabase error:', error);
-      throw error;
-    }
-    return data;
-  } catch (err) {
-    console.error('[updateSchedule] Unexpected error:', err);
-    throw err;
-  }
+  return apiRequest('/api/config?type=schedule', 'PUT', schedule);
 }
 
 export async function getHolidays(): Promise<Holiday[]> {
@@ -73,14 +105,11 @@ export async function getHolidays(): Promise<Holiday[]> {
 }
 
 export async function addHoliday(holiday: Omit<Holiday, 'id' | 'created_at'>): Promise<Holiday> {
-  const { data, error } = await supabase.from('holidays').insert(holiday).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/config?type=holidays', 'POST', holiday);
 }
 
 export async function removeHoliday(id: string): Promise<void> {
-  const { error } = await supabase.from('holidays').delete().eq('id', id);
-  if (error) throw error;
+  await apiRequest<void>(withId('/api/config?type=holidays', id), 'DELETE');
 }
 
 export async function getTeachers(): Promise<Teacher[]> {
@@ -90,25 +119,19 @@ export async function getTeachers(): Promise<Teacher[]> {
 }
 
 export async function addTeacher(teacher: Omit<Teacher, 'id' | 'created_at' | 'updated_at'>): Promise<Teacher> {
-  const { data, error } = await supabase.from('teachers').insert(teacher).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/teachers', 'POST', teacher);
 }
 
 export async function updateTeacher(id: string, updates: Partial<Teacher>): Promise<Teacher> {
-  const { data, error } = await supabase.from('teachers').update(updates).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest(withId('/api/teachers', id), 'PATCH', updates);
 }
 
 export async function deleteTeacher(id: string): Promise<void> {
-  const { error } = await supabase.from('teachers').delete().eq('id', id);
-  if (error) throw error;
+  await apiRequest<void>(withId('/api/teachers', id), 'DELETE');
 }
 
 export async function importTeachersBatch(teachers: Omit<Teacher, 'id' | 'created_at' | 'updated_at'>[]): Promise<number> {
-  const { data, error } = await supabase.from('teachers').upsert(teachers, { onConflict: 'nip', ignoreDuplicates: true }).select();
-  if (error) throw error;
+  const data = await apiRequest<Teacher[]>('/api/teachers', 'POST', teachers);
   return data?.length || 0;
 }
 
@@ -119,25 +142,19 @@ export async function getStudents(): Promise<Student[]> {
 }
 
 export async function addStudent(student: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
-  const { data, error } = await supabase.from('students').insert(student).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/students', 'POST', student);
 }
 
 export async function updateStudent(id: string, updates: Partial<Student>): Promise<Student> {
-  const { data, error } = await supabase.from('students').update(updates).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest(withId('/api/students', id), 'PATCH', updates);
 }
 
 export async function deleteStudent(id: string): Promise<void> {
-  const { error } = await supabase.from('students').delete().eq('id', id);
-  if (error) throw error;
+  await apiRequest<void>(withId('/api/students', id), 'DELETE');
 }
 
 export async function importStudentsBatch(students: Omit<Student, 'id' | 'created_at' | 'updated_at'>[]): Promise<number> {
-  const { data, error } = await supabase.from('students').upsert(students, { onConflict: 'nisn', ignoreDuplicates: true }).select();
-  if (error) throw error;
+  const data = await apiRequest<Student[]>('/api/students', 'POST', students);
   return data?.length || 0;
 }
 
@@ -148,20 +165,15 @@ export async function getClasses(): Promise<ClassRoom[]> {
 }
 
 export async function addClass(cls: Omit<ClassRoom, 'id' | 'created_at' | 'updated_at'>): Promise<ClassRoom> {
-  const { data, error } = await supabase.from('classes').insert(cls).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/classes', 'POST', cls);
 }
 
 export async function updateClass(id: string, updates: Partial<ClassRoom>): Promise<ClassRoom> {
-  const { data, error } = await supabase.from('classes').update(updates).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest(withId('/api/classes', id), 'PATCH', updates);
 }
 
 export async function deleteClass(id: string): Promise<void> {
-  const { error } = await supabase.from('classes').delete().eq('id', id);
-  if (error) throw error;
+  await apiRequest<void>(withId('/api/classes', id), 'DELETE');
 }
 
 export async function getAttendance(filters?: {
@@ -170,21 +182,17 @@ export async function getAttendance(filters?: {
   date?: string;
   rombel?: string;
 }): Promise<AttendanceRecord[]> {
-  let query = supabase.from('attendance').select('*');
-  if (filters?.target_type) query = query.eq('target_type', filters.target_type);
-  if (filters?.target_id) query = query.eq('target_id', filters.target_id);
-  if (filters?.date) query = query.eq('date', filters.date);
-  if (filters?.rombel) query = query.eq('rombel', filters.rombel);
-  query = query.order('created_at', { ascending: false });
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  const params = new URLSearchParams();
+  if (filters?.target_type) params.set('target_type', filters.target_type);
+  if (filters?.target_id) params.set('target_id', filters.target_id);
+  if (filters?.date) params.set('date', filters.date);
+  if (filters?.rombel) params.set('rombel', filters.rombel);
+  const suffix = params.size ? `?${params.toString()}` : '';
+  return apiRead(`/api/attendance${suffix}`, []);
 }
 
 export async function recordAttendance(record: Omit<AttendanceRecord, 'id' | 'created_at' | 'updated_at'>): Promise<AttendanceRecord> {
-  const { data, error } = await supabase.from('attendance').upsert(record, { onConflict: 'target_type,target_id,date' }).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/attendance', 'POST', record);
 }
 
 export async function getLeaveRequests(filters?: {
@@ -192,28 +200,20 @@ export async function getLeaveRequests(filters?: {
   target_id?: string;
   status?: string;
 }): Promise<LeaveRequest[]> {
-  let query = supabase.from('leave_requests').select('*');
-  if (filters?.target_type) query = query.eq('target_type', filters.target_type);
-  if (filters?.target_id) query = query.eq('target_id', filters.target_id);
-  if (filters?.status) query = query.eq('status', filters.status);
-  query = query.order('created_at', { ascending: false });
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  const params = new URLSearchParams();
+  if (filters?.target_type) params.set('target_type', filters.target_type);
+  if (filters?.target_id) params.set('target_id', filters.target_id);
+  if (filters?.status) params.set('status', filters.status);
+  const suffix = params.size ? `?${params.toString()}` : '';
+  return apiRead(`/api/leaves${suffix}`, []);
 }
 
 export async function submitLeaveRequest(request: Omit<LeaveRequest, 'id' | 'created_at' | 'updated_at'>): Promise<LeaveRequest> {
-  const { data, error } = await supabase.from('leave_requests').insert(request).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/leaves', 'POST', request);
 }
 
 export async function reviewLeaveRequest(id: string, decision: 'Disetujui' | 'Ditolak', reviewerId: string, reviewNotes?: string): Promise<LeaveRequest> {
-  const { data, error } = await supabase.from('leave_requests').update({
-    status: decision, reviewed_by: reviewerId, reviewed_at: new Date().toISOString(), review_notes: reviewNotes
-  }).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest(withId('/api/leaves', id), 'PATCH', { decision, reviewer_id: reviewerId, review_notes: reviewNotes });
 }
 
 export async function getCorrectionRequests(filters?: {
@@ -221,46 +221,32 @@ export async function getCorrectionRequests(filters?: {
   target_id?: string;
   status?: string;
 }): Promise<CorrectionRequest[]> {
-  let query = supabase.from('correction_requests').select('*');
-  if (filters?.target_type) query = query.eq('target_type', filters.target_type);
-  if (filters?.target_id) query = query.eq('target_id', filters.target_id);
-  if (filters?.status) query = query.eq('status', filters.status);
-  query = query.order('created_at', { ascending: false });
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  const params = new URLSearchParams();
+  if (filters?.target_type) params.set('target_type', filters.target_type);
+  if (filters?.target_id) params.set('target_id', filters.target_id);
+  if (filters?.status) params.set('status', filters.status);
+  const suffix = params.size ? `?${params.toString()}` : '';
+  return apiRead(`/api/corrections${suffix}`, []);
 }
 
 export async function submitCorrectionRequest(request: Omit<CorrectionRequest, 'id' | 'created_at' | 'updated_at'>): Promise<CorrectionRequest> {
-  const { data, error } = await supabase.from('correction_requests').insert(request).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/corrections', 'POST', request);
 }
 
 export async function reviewCorrectionRequest(id: string, decision: 'Disetujui' | 'Ditolak', reviewerId: string): Promise<CorrectionRequest> {
-  const { data, error } = await supabase.from('correction_requests').update({
-    status: decision, reviewed_by: reviewerId, reviewed_at: new Date().toISOString()
-  }).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest(withId('/api/corrections', id), 'PATCH', { decision, reviewer_id: reviewerId });
 }
 
 export async function getActivityLogs(limit = 100): Promise<ActivityLog[]> {
-  const { data, error } = await supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(limit);
-  if (error) throw error;
-  return data || [];
+  return apiRead(`/api/logs?limit=${encodeURIComponent(String(limit))}`, []);
 }
 
 export async function addLog(log: Omit<ActivityLog, 'id' | 'created_at'>): Promise<ActivityLog> {
-  const { data, error } = await supabase.from('activity_logs').insert(log).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/logs', 'POST', log);
 }
 
 export async function getAccounts(): Promise<UserAccount[]> {
-  const { data, error } = await supabase.from('user_accounts').select('*').order('created_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
+  return apiRead('/api/accounts', []);
 }
 
 export async function getAccountByIdentifier(identifier: string): Promise<UserAccount | null> {
@@ -270,20 +256,15 @@ export async function getAccountByIdentifier(identifier: string): Promise<UserAc
 }
 
 export async function addAccount(account: Omit<UserAccount, 'id' | 'created_at' | 'updated_at'>): Promise<UserAccount> {
-  const { data, error } = await supabase.from('user_accounts').insert(account).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest('/api/accounts', 'POST', account);
 }
 
 export async function updateAccount(id: string, updates: Partial<UserAccount>): Promise<UserAccount> {
-  const { data, error } = await supabase.from('user_accounts').update(updates).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
+  return apiRequest(withId('/api/accounts', id), 'PATCH', updates);
 }
 
 export async function deleteAccount(id: string): Promise<void> {
-  const { error } = await supabase.from('user_accounts').delete().eq('id', id);
-  if (error) throw error;
+  await apiRequest<void>(withId('/api/accounts', id), 'DELETE');
 }
 
 export async function resetAccountPassword(id: string, newPasswordHash: string): Promise<UserAccount> {
@@ -291,7 +272,7 @@ export async function resetAccountPassword(id: string, newPasswordHash: string):
 }
 
 export async function updateLastLogin(id: string): Promise<void> {
-  await supabase.from('user_accounts').update({ last_login: new Date().toISOString() }).eq('id', id);
+  await apiRequest<void>(withId('/api/accounts', id), 'PATCH', { last_login: new Date().toISOString() });
 }
 
 export async function promoteStudents(): Promise<PromoteResult> {
@@ -388,12 +369,13 @@ export async function autoCloseDayAlpa(): Promise<number> {
 
 export async function loginWithCredential(identifier: string, password: string): Promise<LoginResult> {
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('/api/auth', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify({ identifier, password }),
     });
     const data = await res.json();
-    if (!data.user) return { success: false, message: data.error || 'Login gagal' };
+    if (!res.ok || !data.user) return { success: false, message: data.error || 'Login gagal' };
     return { success: true, message: `Selamat datang, ${data.user.nama}!`, user: data.user };
   } catch {
     return { success: false, message: 'Terjadi kesalahan jaringan. Silakan coba lagi.' };

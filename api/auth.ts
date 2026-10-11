@@ -1,14 +1,21 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseAdmin } from '../_lib/supabaseAdmin';
+import { supabaseAdmin } from './_lib/supabaseAdmin';
+import { setSessionCookie } from './_lib/session';
+import { withApiErrorHandling } from './_lib/http';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { identifier, password } = req.body;
+  const body = req.body;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return res.status(400).json({ error: 'Request body must be a JSON object' });
+  }
 
-  if (!identifier || !password) {
+  const { identifier, password } = body;
+
+  if (typeof identifier !== 'string' || typeof password !== 'string' || !identifier.trim() || !password) {
     return res.status(400).json({ error: 'Identifier and password are required' });
   }
 
@@ -34,17 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(403).json({ error: 'Account is inactive' });
   }
 
-  // In production, use proper password hashing (bcrypt)
-  // For now, we accept the stored hash or default passwords
-  const validPasswords = [
-    account.password_hash,
-    'admin123',
-    'madrasah123',
-    'guru123',
-    'siswa123',
-  ].filter(Boolean);
-
-  const isValid = validPasswords.some(p => p === cleanPass);
+  const isValid = typeof account.password_hash === 'string' && account.password_hash === cleanPass;
 
   if (!isValid) {
     return res.status(401).json({ error: 'Invalid credentials' });
@@ -52,12 +49,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Update last login (fire-and-forget with error handling)
   try {
-    await supabaseAdmin
+    const { error: updateError } = await supabaseAdmin
       .from('user_accounts')
       .update({ last_login: new Date().toISOString() })
       .eq('id', account.id);
+    if (updateError) {
+      console.error('supabase.update_last_login_failed', {
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+    }
   } catch (updateErr) {
-    console.error('[POST /api/auth] Failed to update last_login:', updateErr);
+    console.error('supabase.update_last_login_unexpected_error', updateErr);
+  }
+
+  try {
+    setSessionCookie(res, account);
+  } catch (sessionError) {
+    console.error('auth.session_creation_failed', sessionError);
+    return res.status(500).json({ error: 'Server authentication is not configured' });
   }
 
   const user = {
@@ -68,10 +80,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     identifier: account.identifier,
     mapel: account.mapel,
     rombel: account.rombel,
-    is_wali Kelas: account.is_wali Kelas,
-    wali Kelas_rombel: account.wali Kelas_rombel,
+    is_wali_kelas: account.is_wali_kelas,
+    wali_kelas_rombel: account.wali_kelas_rombel,
     is_logged_in: true,
   };
 
   return res.status(200).json({ user });
 }
+
+export default withApiErrorHandling(handler);

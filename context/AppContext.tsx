@@ -942,6 +942,7 @@ check_out_accuracy: coords.accuracy ?? null,
 
       setCurrentUser(nextUser);
       setShowLoginPage(false);
+      await refreshData();
       await addLog('Masuk Sistem', `${data.user.nama} (${data.user.role.toUpperCase()}) berhasil masuk`);
 
       return { success: true, message: `Selamat datang, ${data.user.nama}!`, user: nextUser };
@@ -970,10 +971,19 @@ check_out_accuracy: coords.accuracy ?? null,
   };
 
   const logout = async () => {
+    try {
+      await addLog('Keluar Sistem', 'Pengguna telah keluar dari sesi aplikasi.');
+    } catch (error) {
+      console.error('Failed to write logout activity log:', error);
+    }
+    try {
+      await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+    } catch (error) {
+      console.error('Failed to clear server session:', error);
+    }
     const loggedOutUser: CurrentUser = { ...DEFAULT_CURRENT_USER };
     setCurrentUser(loggedOutUser);
     setShowLoginPage(true);
-    await addLog('Keluar Sistem', 'Pengguna telah keluar dari sesi aplikasi.');
   };
 
   const loginAs = (role: UserRole, targetId?: string) => {

@@ -1,7 +1,10 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseAdmin } from '../_lib/supabaseAdmin';
+import { supabaseAdmin } from './_lib/supabaseAdmin';
+import { requireRole } from './_lib/session';
+import { withApiErrorHandling } from './_lib/http';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
+  if (!requireRole(req, res, ['admin', 'kepala'])) return;
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -45,3 +48,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Failed to fetch stats' });
   }
 }
+
+export default withApiErrorHandling(handler);
