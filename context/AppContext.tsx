@@ -915,7 +915,7 @@ check_out_accuracy: coords.accuracy ?? null,
 
   const loginWithCredential = async (identifierOrUsername: string, password: string) => {
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: identifierOrUsername, password }),
