@@ -164,13 +164,13 @@ export function getMinutesLate(checkInTime: string, limitTime: string): number {
 }
 
 export interface EffectiveTeacherSchedule {
-  dayIndex: number;
-  dayName: string;
+  day_index: number;
+  day_name: string;
   aktif: boolean;
-  isOverride: boolean;
-  jamMasuk: string;
-  batasTerlambat: string;
-  jamPulang: string;
+  is_override: boolean;
+  jam_masuk: string;
+  batas_terlambat: string;
+  jam_pulang: string;
   keterangan: string;
 }
 
@@ -181,7 +181,7 @@ export interface EffectiveTeacherSchedule {
 export function getTeacherEffectiveSchedule(
   teacher: Teacher | undefined | null,
   dayIndex: number,
-  defaultSchedule: ScheduleConfig
+  defaultSchedule: ScheduleConfig | null | undefined
 ): EffectiveTeacherSchedule {
   const dayName = DAYS_ID[dayIndex] || '';
   const isJumat = dayIndex === MADRASAH_WEEKLY_HOLIDAY;
@@ -189,30 +189,30 @@ export function getTeacherEffectiveSchedule(
   // Jika hari Jum'at, selalu libur rutin mingguan
   if (isJumat) {
     return {
-      dayIndex,
-      dayName,
+      day_index: dayIndex,
+      day_name: dayName,
       aktif: false,
-      isOverride: false,
-      jamMasuk: defaultSchedule.jamMasukGuru,
-      batasTerlambat: defaultSchedule.batasTerlambatGuru,
-      jamPulang: defaultSchedule.jamPulangGuru,
+      is_override: false,
+      jam_masuk: defaultSchedule?.jam_masuk_guru || '07:00',
+      batas_terlambat: defaultSchedule?.batas_terlambat_guru || '07:15',
+      jam_pulang: defaultSchedule?.jam_pulang_guru || '15:00',
       keterangan: "Hari Libur Rutin Jum'at",
     };
   }
 
-  const custom = teacher?.jadwalKhusus?.find((j) => j.dayIndex === dayIndex);
+  const custom = teacher?.jadwal_khusus?.find((j) => j.day_index === dayIndex);
 
   // Jika belum ada konfigurasi kustom, ikuti default madrasah
   if (!custom) {
-    const isMadrasahActive = defaultSchedule.hariKerja?.includes(dayIndex) ?? true;
+    const isMadrasahActive = defaultSchedule?.hari_kerja?.includes(dayIndex) ?? true;
     return {
-      dayIndex,
-      dayName,
+      day_index: dayIndex,
+      day_name: dayName,
       aktif: isMadrasahActive,
-      isOverride: false,
-      jamMasuk: defaultSchedule.jamMasukGuru,
-      batasTerlambat: defaultSchedule.batasTerlambatGuru,
-      jamPulang: defaultSchedule.jamPulangGuru,
+      is_override: false,
+      jam_masuk: defaultSchedule?.jam_masuk_guru || '07:00',
+      batas_terlambat: defaultSchedule?.batas_terlambat_guru || '07:15',
+      jam_pulang: defaultSchedule?.jam_pulang_guru || '15:00',
       keterangan: isMadrasahActive ? 'Jadwal Standar Madrasah' : 'Bebas Tugas',
     };
   }
@@ -220,22 +220,22 @@ export function getTeacherEffectiveSchedule(
   // Jika guru diatur TIDAK AKTIF (bebas tugas / tidak ada jam mengajar pada hari tsb)
   if (!custom.aktif) {
     return {
-      dayIndex,
-      dayName,
+      day_index: dayIndex,
+      day_name: dayName,
       aktif: false,
-      isOverride: custom.isOverride,
-      jamMasuk: '-',
-      batasTerlambat: '-',
-      jamPulang: '-',
+      is_override: custom.is_override,
+      jam_masuk: '-',
+      batas_terlambat: '-',
+      jam_pulang: '-',
       keterangan: 'Tidak Ada Jadwal Mengajar (Off)',
     };
   }
 
   // Jika aktif dan menggunakan OVERRIDE (jam khusus)
-  if (custom.isOverride) {
-    const jamMasuk = custom.jamMasuk || defaultSchedule.jamMasukGuru;
-    const jamPulang = custom.jamPulang || defaultSchedule.jamPulangGuru;
-    let batasTerlambat = custom.batasTerlambat;
+  if (custom.is_override) {
+    const jamMasuk = custom.jam_masuk || defaultSchedule?.jam_masuk_guru || '07:00';
+    const jamPulang = custom.jam_pulang || defaultSchedule?.jam_pulang_guru || '15:00';
+    let batasTerlambat = custom.batas_terlambat;
     if (!batasTerlambat) {
       // Hitung toleransi otomatis 15 menit dari jam masuk kustom
       const [h, m] = jamMasuk.split(':').map((x) => parseInt(x, 10));
@@ -246,26 +246,26 @@ export function getTeacherEffectiveSchedule(
     }
 
     return {
-      dayIndex,
-      dayName,
+      day_index: dayIndex,
+      day_name: dayName,
       aktif: true,
-      isOverride: true,
-      jamMasuk,
-      batasTerlambat,
-      jamPulang,
+      is_override: true,
+      jam_masuk: jamMasuk,
+      batas_terlambat: batasTerlambat,
+      jam_pulang: jamPulang,
       keterangan: 'Override Jadwal Khusus',
     };
   }
 
   // Jika aktif dan menggunakan jadwal standar
   return {
-    dayIndex,
-    dayName,
+    day_index: dayIndex,
+    day_name: dayName,
     aktif: true,
-    isOverride: false,
-    jamMasuk: defaultSchedule.jamMasukGuru,
-    batasTerlambat: defaultSchedule.batasTerlambatGuru,
-    jamPulang: defaultSchedule.jamPulangGuru,
+    is_override: false,
+    jam_masuk: defaultSchedule?.jam_masuk_guru || '07:00',
+    batas_terlambat: defaultSchedule?.batas_terlambat_guru || '07:15',
+    jam_pulang: defaultSchedule?.jam_pulang_guru || '15:00',
     keterangan: 'Jadwal Standar Madrasah',
   };
 }

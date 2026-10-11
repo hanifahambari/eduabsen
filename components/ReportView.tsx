@@ -33,25 +33,25 @@ export const ReportView: React.FC = () => {
   // Filter records
   const filteredRecords = attendance.filter((rec) => {
     // Siswa only sees their own records
-    if (isStudent && rec.targetId !== currentUser.id) {
+    if (isStudent && rec.target_id !== currentUser.id) {
       return false;
     }
     // Guru scoping
     if (isGuru) {
-      if (currentUser.isWaliKelas) {
-        const isOwnRecord = rec.targetId === currentUser.id;
-        const isClassRecord = rec.targetType === 'siswa' && rec.rombel === currentUser.waliKelasRombel;
+      if (currentUser.is_wali_kelas) {
+        const isOwnRecord = rec.target_id === currentUser.id;
+        const isClassRecord = rec.target_type === 'siswa' && rec.rombel === currentUser.wali_kelas_rombel;
         if (!isOwnRecord && !isClassRecord) {
           return false;
         }
       } else {
-        if (rec.targetId !== currentUser.id) {
+        if (rec.target_id !== currentUser.id) {
           return false;
         }
       }
     }
 
-    if (filterType !== 'ALL' && rec.targetType !== filterType) {
+    if (filterType !== 'ALL' && rec.target_type !== filterType) {
       return false;
     }
     if (filterRombel !== 'ALL' && rec.rombel !== filterRombel) {
@@ -68,8 +68,8 @@ export const ReportView: React.FC = () => {
     }
     if (
       searchName.trim() &&
-      !rec.targetName.toLowerCase().includes(searchName.toLowerCase()) &&
-      !rec.targetIdentifier.includes(searchName)
+      !rec.target_name.toLowerCase().includes(searchName.toLowerCase()) &&
+      !rec.target_identifier.includes(searchName)
     ) {
       return false;
     }
@@ -111,8 +111,8 @@ export const ReportView: React.FC = () => {
         ? [
             idx + 1,
             r.date,
-            r.checkInTime || '-',
-            r.checkOutTime || '-',
+            r.check_in_time || '-',
+            r.check_out_time || '-',
             r.status,
             `"${r.flags.join(', ')}"`,
             `"${(r.notes || '').replace(/"/g, '""')}"`,
@@ -120,18 +120,18 @@ export const ReportView: React.FC = () => {
         : [
             idx + 1,
             r.date,
-            r.targetType.toUpperCase(),
-            `"${r.targetName.replace(/"/g, '""')}"`,
-            `'${r.targetIdentifier}`,
+            r.target_type.toUpperCase(),
+            `"${r.target_name.replace(/"/g, '""')}"`,
+            `'${r.target_identifier}`,
             r.rombel || '-',
-            r.checkInTime || '-',
-            r.checkInDistance !== undefined ? r.checkInDistance : '-',
-            r.checkOutTime || '-',
-            r.checkOutDistance !== undefined ? r.checkOutDistance : '-',
+            r.check_in_time || '-',
+            r.check_in_distance !== undefined ? r.check_in_distance : '-',
+            r.check_out_time || '-',
+            r.check_out_distance !== undefined ? r.check_out_distance : '-',
             r.status,
             `"${r.flags.join(', ')}"`,
             `"${(r.notes || '').replace(/"/g, '""')}"`,
-            `"${r.checkInScannedByName || (r.checkInScannedBy === 'self' ? 'Mandiri' : '-')}"`,
+            `"${r.check_in_scanned_by_name || (r.check_in_scanned_by === 'self' ? 'Mandiri' : '-')}"`,
           ]
     );
 
@@ -147,7 +147,7 @@ export const ReportView: React.FC = () => {
       'download',
       isStudent
         ? `Rekap_Presensi_Pribadi_${currentStudent.nisn}_${startDate}_sd_${endDate}.csv`
-        : `Rekap_Presensi_${config.nama.replace(/\s+/g, '_')}_${startDate}_sd_${endDate}.csv`
+        : `Rekap_Presensi_${config?.nama.replace(/\s+/g, '_')}_${startDate}_sd_${endDate}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -347,9 +347,9 @@ export const ReportView: React.FC = () => {
       {/* Official Madrasah Letterhead for Printing */}
       <div className="print-only hidden p-4 border-b-2 border-slate-900 mb-4">
         <div className="flex items-center justify-center gap-4 text-center">
-          {config.logo && (
+          {config?.logo && (
             <img
-              src={config.logo}
+              src={config?.logo}
               alt="Logo Madrasah"
               className="w-16 h-16 object-contain shrink-0"
             />
@@ -358,9 +358,9 @@ export const ReportView: React.FC = () => {
             <h2 className="text-base font-bold uppercase tracking-tight">
               KEMENTERIAN AGAMA REPUBLIK INDONESIA
             </h2>
-            <h1 className="text-lg font-bold uppercase tracking-tight">{config.nama}</h1>
+            <h1 className="text-lg font-bold uppercase tracking-tight">{config?.nama}</h1>
             <p className="text-xs text-slate-600 mt-0.5">
-              {config.alamat} • Telp: {config.telepon} • NSM: {config.nsm} • NPSN/NPSM: {config.npsm || config.npsn}
+              {config?.alamat} • Telp: {config?.telepon} • NSM: {config?.nsm} • NPSN/NPSM: {config?.npsm || config?.npsn}
             </p>
           </div>
         </div>
@@ -404,27 +404,27 @@ export const ReportView: React.FC = () => {
                       </td>
                       {!isStudent && (
                         <td className="py-2.5 px-3 font-bold text-slate-900">
-                          {r.targetName}
+                          {r.target_name}
                         </td>
                       )}
                       {!isStudent && (
                         <td className="py-2.5 px-3 text-slate-600">
                           <span className="font-semibold text-slate-800">
-                            {r.targetType === 'guru' ? 'Guru' : r.rombel || 'Siswa'}
+                            {r.target_type === 'guru' ? 'Guru' : r.rombel || 'Siswa'}
                           </span>{' '}
-                          • <span className="font-mono text-[11px] tabular-nums">{r.targetIdentifier}</span>
+                          • <span className="font-mono text-[11px] tabular-nums">{r.target_identifier}</span>
                         </td>
                       )}
                       <td className="py-2.5 px-3 font-mono text-[11px] text-slate-800 tabular-nums">
-                        {r.checkInTime ? r.checkInTime.substring(0, 5) : '-'}
-                        {!isStudent && r.checkInDistance !== undefined && (
+                        {r.check_in_time ? r.check_in_time.substring(0, 5) : '-'}
+                        {!isStudent && r.check_in_distance !== undefined && (
                           <span className="text-[10px] text-slate-400 block">
-                            {r.checkInDistance}m
+                            {r.check_in_distance}m
                           </span>
                         )}
                       </td>
                       <td className="py-2.5 px-3 font-mono text-[11px] text-slate-800 tabular-nums">
-                        {r.checkOutTime ? r.checkOutTime.substring(0, 5) : '-'}
+                        {r.check_out_time ? r.check_out_time.substring(0, 5) : '-'}
                       </td>
                       <td className="py-2.5 px-3 font-semibold">
                         <span
@@ -445,7 +445,7 @@ export const ReportView: React.FC = () => {
                         {r.flags.length > 0 ? r.flags.join(', ') : '-'}
                       </td>
                       <td className="py-2.5 px-3 text-[11px] text-slate-500 max-w-xs truncate">
-                        {r.notes || (r.checkInScannedByName ? `Scan: ${r.checkInScannedByName}` : '-')}
+                        {r.notes || (r.check_in_scanned_by_name ? `Scan: ${r.check_in_scanned_by_name}` : '-')}
                       </td>
                     </tr>
                   );
@@ -462,8 +462,8 @@ export const ReportView: React.FC = () => {
               <p>Mengetahui,</p>
               <p className="font-bold">Kepala Madrasah</p>
               <div className="h-16"></div>
-              <p className="font-bold underline">{config.kepalaMadrasah}</p>
-              <p className="text-[11px] font-mono">NIP. {config.nipKepala}</p>
+              <p className="font-bold underline">{config?.kepala_madrasah}</p>
+              <p className="text-[11px] font-mono">NIP. {config?.nip_kepala}</p>
             </div>
             <div className="w-56">
               <p>Jakarta, {formatIndonesianDate(currentDate)}</p>

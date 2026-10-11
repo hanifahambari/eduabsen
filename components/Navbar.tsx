@@ -69,8 +69,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
       case 'kepala':
         return 'Kepala Madrasah';
       case 'guru':
-        return currentUser.isWaliKelas
-          ? `Guru / Wali Kelas ${currentUser.waliKelasRombel || ''}`
+        return currentUser.is_wali_kelas
+          ? `Guru / Wali Kelas ${currentUser.wali_kelas_rombel || ''}`
           : 'Guru Mapel';
       case 'siswa':
         return `Siswa (${currentUser.rombel || ''})`;
@@ -113,10 +113,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               className="text-left group cursor-pointer focus:outline-hidden min-w-0 flex items-center gap-2 sm:gap-2.5 overflow-hidden"
             >
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-700 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-xs group-hover:bg-emerald-800 transition-colors overflow-hidden shrink-0">
-                {config.logo ? (
+                {config?.logo ? (
                   <img
-                    src={config.logo}
-                    alt={config.nama}
+                    src={config?.logo}
+                    alt={config?.nama}
                     className="w-full h-full object-contain p-0.5 bg-white"
                   />
                 ) : (
@@ -125,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               </div>
               <div className="min-w-0 flex flex-col justify-center overflow-hidden">
                 <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-snug group-hover:text-emerald-700 transition-colors truncate">
-                  {config.nama}
+                  {config?.nama}
                 </h1>
                 <p className="text-[10px] sm:text-xs text-slate-500 font-normal leading-tight truncate hidden sm:block">
                   Presensi Digital Berbasis Geotagging
@@ -301,20 +301,25 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                 </div>
               )}
 
-              <form onSubmit={(e) => {
+              <form onSubmit={async (e) => {
                 e.preventDefault();
                 if (changePasswordForm.newPassword !== changePasswordForm.confirmPassword) {
                   setChangePasswordError('Konfirmasi kata sandi baru tidak cocok.');
                   return;
                 }
                 setChangePasswordLoading(true);
-                const result = changePassword(changePasswordForm.oldPassword, changePasswordForm.newPassword);
-                setChangePasswordLoading(false);
-                if (result.success) {
-                  setShowChangePasswordModal(false);
-                  setShowLoginPage(true);
-                } else {
-                  setChangePasswordError(result.message);
+                try {
+                  const result = await changePassword(changePasswordForm.oldPassword, changePasswordForm.newPassword);
+                  if (result.success) {
+                    setShowChangePasswordModal(false);
+                    setShowLoginPage(true);
+                  } else {
+                    setChangePasswordError(result.message);
+                  }
+                } catch {
+                  setChangePasswordError('Gagal mengubah kata sandi');
+                } finally {
+                  setChangePasswordLoading(false);
                 }
               }} className="space-y-3.5">
                 <div>

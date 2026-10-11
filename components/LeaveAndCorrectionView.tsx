@@ -34,7 +34,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
   } = useApp();
 
   const isAdminOrKepala = currentUser.role === 'admin' || currentUser.role === 'kepala';
-  const isWaliKelas = currentUser.role === 'guru' && currentUser.isWaliKelas;
+  const isWaliKelas = currentUser.role === 'guru' && currentUser.is_wali_kelas;
   const canDirectCorrect = isAdminOrKepala || isWaliKelas;
 
   // Active sub-tab
@@ -58,7 +58,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
 
   // If wali kelas, filter selectable students strictly to their rombel
   const selectableStudents = isWaliKelas
-    ? students.filter((s) => s.rombel === currentUser.waliKelasRombel)
+    ? students.filter((s) => s.rombel === currentUser.wali_kelas_rombel)
     : students;
   const [selectedStudentId, setSelectedStudentId] = useState(selectableStudents[0]?.id || '');
   const [leaveType, setLeaveType] = useState<'Izin' | 'Sakit' | 'Dinas Luar'>('Izin');
@@ -74,30 +74,31 @@ export const LeaveAndCorrectionView: React.FC = () => {
     try {
       if (leaveTargetType === 'guru') {
         submitLeaveRequest({
-          targetType: 'guru',
-          targetId: currentUser.id,
-          targetName: currentUser.nama,
-          targetIdentifier: currentUser.identifier,
+          target_type: 'guru',
+          target_id: currentUser.id,
+          target_name: currentUser.nama,
+          target_identifier: currentUser.identifier,
+          rombel: null,
           type: leaveType,
-          startDate,
-          endDate,
+          start_date: startDate,
+          end_date: endDate,
           reason,
-          attachmentName: attachmentName || 'Surat_Keterangan.pdf',
+          attachment_name: attachmentName || 'Surat_Keterangan.pdf',
         });
       } else {
         // Siswa
         const st = students.find((s) => s.id === selectedStudentId) || selectableStudents[0];
         submitLeaveRequest({
-          targetType: 'siswa',
-          targetId: st.id,
-          targetName: st.nama,
-          targetIdentifier: st.nisn,
+          target_type: 'siswa',
+          target_id: st.id,
+          target_name: st.nama,
+          target_identifier: st.nisn,
           rombel: st.rombel,
           type: leaveType,
-          startDate,
-          endDate,
+          start_date: startDate,
+          end_date: endDate,
           reason,
-          attachmentName: attachmentName || 'Surat_Izin_Orang_Tua.jpg',
+          attachment_name: attachmentName || 'Surat_Izin_Orang_Tua.jpg',
         });
       }
       setShowNewLeaveModal(false);
@@ -111,8 +112,8 @@ export const LeaveAndCorrectionView: React.FC = () => {
 
   const handleOpenDirectCorrect = (record: AttendanceRecord) => {
     setDirectCorrectTarget(record);
-    setDcCheckInTime(record.checkInTime ? record.checkInTime.substring(0, 5) : '');
-    setDcCheckOutTime(record.checkOutTime ? record.checkOutTime.substring(0, 5) : '');
+    setDcCheckInTime(record.check_in_time ? record.check_in_time.substring(0, 5) : '');
+    setDcCheckOutTime(record.check_out_time ? record.check_out_time.substring(0, 5) : '');
     setDcStatus(record.status);
     setDcReason('');
     setShowDirectCorrectModal(true);
@@ -143,15 +144,15 @@ export const LeaveAndCorrectionView: React.FC = () => {
   };
 
   // Data sets partitioned by role & responsibility
-  const teacherLeaves = leaveRequests.filter((r) => r.targetType === 'guru');
+  const teacherLeaves = leaveRequests.filter((r) => r.target_type === 'guru');
   const studentLeaves = isWaliKelas && !isAdminOrKepala
-    ? leaveRequests.filter((r) => r.targetType === 'siswa' && r.rombel === currentUser.waliKelasRombel)
-    : leaveRequests.filter((r) => r.targetType === 'siswa');
+    ? leaveRequests.filter((r) => r.target_type === 'siswa' && r.rombel === currentUser.wali_kelas_rombel)
+    : leaveRequests.filter((r) => r.target_type === 'siswa');
   const myLeaves = leaveRequests.filter(
-    (r) => r.targetId === currentUser.id && r.targetType === (currentUser.role === 'siswa' ? 'siswa' : 'guru')
+    (r) => r.target_id === currentUser.id && r.target_type === (currentUser.role === 'siswa' ? 'siswa' : 'guru')
   );
   const myCorrections = correctionRequests.filter(
-    (c) => c.targetId === currentUser.id && c.targetType === (currentUser.role === 'siswa' ? 'siswa' : 'guru')
+    (c) => c.target_id === currentUser.id && c.target_type === (currentUser.role === 'siswa' ? 'siswa' : 'guru')
   );
 
   return (
@@ -170,7 +171,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
             {isAdminOrKepala
               ? 'Kepala Madrasah & Administrator memverifikasi permohonan dinas, sakit, dan koreksi presensi.'
               : isWaliKelas
-              ? `Kelola izin pribadi Anda dan verifikasi izin siswa untuk kelas ${currentUser.waliKelasRombel}.`
+              ? `Kelola izin pribadi Anda dan verifikasi izin siswa untuk kelas ${currentUser.wali_kelas_rombel}.`
               : 'Ajukan permohonan izin dinas luar, sakit, atau koreksi lupa presensi ke pimpinan madrasah.'}
           </p>
         </div>
@@ -267,7 +268,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              Persetujuan Izin Siswa ({currentUser.waliKelasRombel}) ({studentLeaves.filter((r) => r.status === 'Menunggu').length} Menunggu)
+              Persetujuan Izin Siswa ({currentUser.wali_kelas_rombel}) ({studentLeaves.filter((r) => r.status === 'Menunggu').length} Menunggu)
             </button>
             <button
               onClick={() => setActiveTab('koreksi-langsung')}
@@ -341,9 +342,9 @@ export const LeaveAndCorrectionView: React.FC = () => {
                     return (
                       <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-3 px-4">
-                          <p className="font-bold text-slate-900">{req.targetName}</p>
+                          <p className="font-bold text-slate-900">{req.target_name}</p>
                           <p className="text-[11px] text-slate-500 font-mono tabular-nums">
-                            NIP. {req.targetIdentifier}
+                            NIP. {req.target_identifier}
                           </p>
                         </td>
                         <td className="py-3 px-4">
@@ -360,13 +361,13 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">
-                          {formatShortDate(req.startDate)} s.d. {formatShortDate(req.endDate)}
+                          {formatShortDate(req.start_date)} s.d. {formatShortDate(req.end_date)}
                         </td>
                         <td className="py-3 px-4 max-w-xs">
                           <p className="text-slate-800 line-clamp-2">{req.reason}</p>
-                          {req.attachmentName && (
+                          {req.attachment_name && (
                             <span className="text-[10px] text-emerald-700 underline font-medium block mt-0.5">
-                              📎 {req.attachmentName}
+                              📎 {req.attachment_name}
                             </span>
                           )}
                         </td>
@@ -384,7 +385,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-[11px] text-slate-500">
-                          {req.reviewedBy || '-'}
+                          {req.reviewed_by || '-'}
                         </td>
                         <td className="py-3 px-4 text-right">
                           {isPending ? (
@@ -451,9 +452,9 @@ export const LeaveAndCorrectionView: React.FC = () => {
                     return (
                       <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-3 px-4">
-                          <p className="font-bold text-slate-900">{req.targetName}</p>
+                          <p className="font-bold text-slate-900">{req.target_name}</p>
                           <p className="text-[11px] text-emerald-800 font-semibold">
-                            {req.rombel} • <span className="font-mono text-slate-500 font-normal">NISN: {req.targetIdentifier}</span>
+                            {req.rombel} • <span className="font-mono text-slate-500 font-normal">NISN: {req.target_identifier}</span>
                           </p>
                         </td>
                         <td className="py-3 px-4">
@@ -466,13 +467,13 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">
-                          {formatShortDate(req.startDate)} s.d. {formatShortDate(req.endDate)}
+                          {formatShortDate(req.start_date)} s.d. {formatShortDate(req.end_date)}
                         </td>
                         <td className="py-3 px-4 max-w-xs">
                           <p className="text-slate-800 line-clamp-2">{req.reason}</p>
-                          {req.attachmentName && (
+                          {req.attachment_name && (
                             <span className="text-[10px] text-emerald-700 underline font-medium block mt-0.5">
-                              📎 {req.attachmentName}
+                              📎 {req.attachment_name}
                             </span>
                           )}
                         </td>
@@ -490,7 +491,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-[11px] text-slate-500">
-                          {req.reviewedBy || '-'}
+                          {req.reviewed_by || '-'}
                         </td>
                         <td className="py-3 px-4 text-right">
                           {isPending ? (
@@ -528,7 +529,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
           <div className="p-3.5 bg-emerald-50 border-b border-emerald-200 text-xs font-semibold text-emerald-950 flex items-center justify-between">
             <span className="flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-emerald-700" />
-              <span>Verifikasi Izin Siswa Kelas Binaan: {currentUser.waliKelasRombel}</span>
+              <span>Verifikasi Izin Siswa Kelas Binaan: {currentUser.wali_kelas_rombel}</span>
             </span>
             <span className="text-[11px] text-emerald-800 font-normal">
               Sebagai wali kelas, Anda berwenang menyetujui izin siswa di rombel ini.
@@ -551,7 +552,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                 {studentLeaves.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-400">
-                      Tidak ada permohonan izin untuk kelas {currentUser.waliKelasRombel}.
+                      Tidak ada permohonan izin untuk kelas {currentUser.wali_kelas_rombel}.
                     </td>
                   </tr>
                 ) : (
@@ -560,8 +561,8 @@ export const LeaveAndCorrectionView: React.FC = () => {
                     return (
                       <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-3 px-4">
-                          <p className="font-bold text-slate-900">{req.targetName}</p>
-                          <p className="text-[11px] text-slate-500 font-mono">NISN: {req.targetIdentifier}</p>
+                          <p className="font-bold text-slate-900">{req.target_name}</p>
+                          <p className="text-[11px] text-slate-500 font-mono">NISN: {req.target_identifier}</p>
                         </td>
                         <td className="py-3 px-4">
                           <span
@@ -573,13 +574,13 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">
-                          {formatShortDate(req.startDate)} s.d. {formatShortDate(req.endDate)}
+                          {formatShortDate(req.start_date)} s.d. {formatShortDate(req.end_date)}
                         </td>
                         <td className="py-3 px-4 max-w-xs">
                           <p className="text-slate-800 line-clamp-2">{req.reason}</p>
-                          {req.attachmentName && (
+                          {req.attachment_name && (
                             <span className="text-[10px] text-emerald-700 underline font-medium block mt-0.5">
-                              📎 {req.attachmentName}
+                              📎 {req.attachment_name}
                             </span>
                           )}
                         </td>
@@ -597,7 +598,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-[11px] text-slate-500">
-                          {req.reviewedBy || '-'}
+                          {req.reviewed_by || '-'}
                         </td>
                         <td className="py-3 px-4 text-right">
                           {isPending ? (
@@ -663,13 +664,13 @@ export const LeaveAndCorrectionView: React.FC = () => {
                         {req.type}
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">
-                        {formatShortDate(req.startDate)} s.d. {formatShortDate(req.endDate)}
+                        {formatShortDate(req.start_date)} s.d. {formatShortDate(req.end_date)}
                       </td>
                       <td className="py-3 px-4 max-w-xs text-slate-700">
                         <p>{req.reason}</p>
-                        {req.attachmentName && (
+                        {req.attachment_name && (
                           <span className="text-[10px] text-emerald-700 underline font-medium block mt-0.5">
-                            📎 {req.attachmentName}
+                            📎 {req.attachment_name}
                           </span>
                         )}
                       </td>
@@ -687,10 +688,10 @@ export const LeaveAndCorrectionView: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-[11px] text-slate-500">
-                        {req.reviewedBy ? (
+                        {req.reviewed_by ? (
                           <>
-                            <p className="text-slate-800 font-semibold">{req.reviewedBy}</p>
-                            <p className="text-slate-500 italic mt-0.5">{req.reviewNotes || '-'}</p>
+                            <p className="text-slate-800 font-semibold">{req.reviewed_by}</p>
+                            <p className="text-slate-500 italic mt-0.5">{req.review_notes || '-'}</p>
                           </>
                         ) : (
                           <span className="text-slate-400 italic">Menunggu Keputusan</span>
@@ -739,8 +740,8 @@ export const LeaveAndCorrectionView: React.FC = () => {
                         {cor.date}
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">
-                        {cor.requestedCheckIn?.substring(0, 5) || '-'} s.d.{' '}
-                        {cor.requestedCheckOut?.substring(0, 5) || '-'} WIB
+                        {cor.requested_check_in?.substring(0, 5) || '-'} s.d.{' '}
+                        {cor.requested_check_out?.substring(0, 5) || '-'} WIB
                       </td>
                       <td className="py-3 px-4 text-slate-700 max-w-xs">
                         {cor.reason}
@@ -759,7 +760,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-[11px] text-slate-500">
-                        {cor.reviewedBy || 'Menunggu verifikasi pimpinan'}
+                        {cor.reviewed_by || 'Menunggu verifikasi pimpinan'}
                       </td>
                     </tr>
                   ))
@@ -805,17 +806,17 @@ export const LeaveAndCorrectionView: React.FC = () => {
                     return (
                       <tr key={cor.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-3 px-4">
-                          <p className="font-bold text-slate-900">{cor.targetName}</p>
+                          <p className="font-bold text-slate-900">{cor.target_name}</p>
                           <p className="text-[11px] text-slate-500">
-                            {cor.targetType === 'guru' ? 'Guru' : cor.rombel} • {cor.targetIdentifier}
+                            {cor.target_type === 'guru' ? 'Guru' : cor.rombel} • {cor.target_identifier}
                           </p>
                         </td>
                         <td className="py-3 px-4 font-mono text-[11px] text-slate-800 tabular-nums">
                           {cor.date}
                         </td>
                         <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">
-                          {cor.requestedCheckIn?.substring(0, 5) || '-'} s.d.{' '}
-                          {cor.requestedCheckOut?.substring(0, 5) || '-'} WIB
+                          {cor.requested_check_in?.substring(0, 5) || '-'} s.d.{' '}
+                          {cor.requested_check_out?.substring(0, 5) || '-'} WIB
                         </td>
                         <td className="py-3 px-4 text-slate-700 max-w-xs">
                           {cor.reason}
@@ -834,7 +835,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-[11px] text-slate-500">
-                          {cor.reviewedBy || '-'}
+                          {cor.reviewed_by || '-'}
                         </td>
                         <td className="py-3 px-4 text-right">
                           {isPending ? (
@@ -899,13 +900,13 @@ export const LeaveAndCorrectionView: React.FC = () => {
                 ) : (
                   attendance
                     .slice()
-                    .sort((a, b) => (b.date + (b.checkInTime || '')).localeCompare(a.date + (a.checkInTime || '')))
+                    .sort((a, b) => (b.date + (b.check_in_time || '')).localeCompare(a.date + (a.check_in_time || '')))
                     .map((rec) => (
                       <tr key={rec.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-4 font-bold text-slate-900">{rec.targetName}</td>
+                        <td className="py-3 px-4 font-bold text-slate-900">{rec.target_name}</td>
                         <td className="py-3 px-4 font-mono text-[11px] text-slate-800 tabular-nums">{rec.date}</td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.checkInTime?.substring(0, 5) || '-'}</td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.checkOutTime?.substring(0, 5) || '-'}</td>
+                        <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.check_in_time?.substring(0, 5) || '-'}</td>
+                        <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.check_out_time?.substring(0, 5) || '-'}</td>
                         <td className="py-3 px-4">
                           <span
                             className={
@@ -923,7 +924,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                             {rec.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-[11px] text-slate-500 capitalize">{rec.targetType}</td>
+                        <td className="py-3 px-4 text-[11px] text-slate-500 capitalize">{rec.target_type}</td>
                         <td className="py-3 px-4 text-[11px] text-slate-500">{rec.rombel || '-'}</td>
                         <td className="py-3 px-4 text-right">
                           <button
@@ -946,7 +947,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
       {isWaliKelas && activeTab === 'koreksi-langsung' && (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
           <div className="p-3.5 bg-blue-50 border-b border-slate-200 text-xs font-semibold text-blue-800 flex items-center justify-between">
-            <span>Koreksi Langsung Absensi Siswa Kelas {currentUser.waliKelasRombel}</span>
+            <span>Koreksi Langsung Absensi Siswa Kelas {currentUser.wali_kelas_rombel}</span>
             <span className="text-[11px] text-blue-600 font-normal">
               Perubahan langsung terekam di riwayat dengan penanda "Koreksi Langsung Wali Kelas".
             </span>
@@ -965,15 +966,15 @@ export const LeaveAndCorrectionView: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {attendance
-                  .filter((a) => a.targetType === 'siswa' && a.rombel === currentUser.waliKelasRombel)
+                  .filter((a) => a.target_type === 'siswa' && a.rombel === currentUser.wali_kelas_rombel)
                   .slice()
-                  .sort((a, b) => (b.date + (b.checkInTime || '')).localeCompare(a.date + (a.checkInTime || '')))
+                  .sort((a, b) => (b.date + (b.check_in_time || '')).localeCompare(a.date + (a.check_in_time || '')))
                   .map((rec) => (
                     <tr key={rec.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-900">{rec.targetName}</td>
+                      <td className="py-3 px-4 font-bold text-slate-900">{rec.target_name}</td>
                       <td className="py-3 px-4 font-mono text-[11px] text-slate-800 tabular-nums">{rec.date}</td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.checkInTime?.substring(0, 5) || '-'}</td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.checkOutTime?.substring(0, 5) || '-'}</td>
+                      <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.check_in_time?.substring(0, 5) || '-'}</td>
+                      <td className="py-3 px-4 font-mono text-[11px] text-slate-700 tabular-nums">{rec.check_out_time?.substring(0, 5) || '-'}</td>
                       <td className="py-3 px-4">
                         <span
                           className={
@@ -1053,7 +1054,7 @@ export const LeaveAndCorrectionView: React.FC = () => {
                           : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      Siswa Kelas ({currentUser.waliKelasRombel})
+                      Siswa Kelas ({currentUser.wali_kelas_rombel})
                     </button>
                   </div>
                 </div>
@@ -1241,9 +1242,9 @@ export const LeaveAndCorrectionView: React.FC = () => {
 
             <form onSubmit={handleDirectCorrectSubmit} className="space-y-4 mt-4">
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                <p className="text-xs font-semibold text-slate-900">{directCorrectTarget.targetName}</p>
+                <p className="text-xs font-semibold text-slate-900">{directCorrectTarget.target_name}</p>
                 <p className="text-[11px] text-slate-500">
-                  {directCorrectTarget.targetType === 'guru' ? 'Guru' : 'Siswa'} {directCorrectTarget.targetType === 'siswa' ? '• ' + directCorrectTarget.rombel : ''} • {directCorrectTarget.date}
+                  {directCorrectTarget.target_type === 'guru' ? 'Guru' : 'Siswa'} {directCorrectTarget.target_type === 'siswa' ? '• ' + directCorrectTarget.rombel : ''} • {directCorrectTarget.date}
                 </p>
               </div>
 

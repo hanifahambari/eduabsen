@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#065f46"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#facc15"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with subtle corner radius -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  
+  <!-- Outer radar ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#34d399" stroke-width="6" stroke-dasharray="16 12" opacity="0.4"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#6ee7b7" stroke-width="4" opacity="0.3"/>
+
+  <!-- Madrasah Dome & Minaret Silhouette -->
+  <path d="M256 120 C230 160 200 200 200 240 C200 250 205 260 215 260 L297 260 C307 260 312 250 312 240 C312 200 282 160 256 120 Z" fill="url(#gold)" opacity="0.95"/>
+  <path d="M256 100 L256 125" stroke="#facc15" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="256" cy="95" r="10" fill="#facc15"/>
+  
+  <!-- Geotagging Location Pin Base -->
+  <path d="M256 170 C210 170 172 208 172 254 C172 316 244 388 251 395 C254 398 258 398 261 395 C268 388 340 316 340 254 C340 208 302 170 256 170 Z" fill="#ffffff" opacity="0.2"/>
+  <path d="M256 186 C219 186 189 216 189 253 C189 303 246 364 252 370 C254 372 258 372 260 370 C266 364 323 303 323 253 C323 216 293 186 256 186 Z" fill="none" stroke="#ffffff" stroke-width="12"/>
+  
+  <!-- Central Pulse Circle -->
+  <circle cx="256" cy="253" r="28" fill="#ffffff"/>
+  <circle cx="256" cy="253" r="14" fill="#047857"/>
+
+  <!-- Digital checkmark badge -->
+  <circle cx="340" cy="340" r="42" fill="#10b981" stroke="#ffffff" stroke-width="8"/>
+  <path d="M324 340 L335 351 L358 328" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

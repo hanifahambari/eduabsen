@@ -51,11 +51,11 @@ function MainLayout() {
         <footer className="no-print mt-auto border-t border-slate-200 bg-white py-4 lg:ml-64">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700">{config.nama}</span>
+              <span className="font-semibold text-slate-700">{config?.nama}</span>
               <span aria-hidden="true">•</span>
-              <span>NSM: {config.nsm}</span>
+              <span>NSM: {config?.nsm}</span>
               <span aria-hidden="true">•</span>
-              <span>NPSM: {config.npsm || config.npsn}</span>
+              <span>NPSM: {config?.npsm || config?.npsn}</span>
             </div>
             <div className="flex items-center gap-3">
               <span>Sederhana • Cepat • Akurat • Tercatat • Mudah Dipantau</span>
@@ -70,7 +70,7 @@ function MainLayout() {
 function AppContent() {
   const { currentUser, showLoginPage } = useApp();
 
-  if (showLoginPage || !currentUser.isLoggedIn) {
+  if (showLoginPage || !currentUser.is_logged_in) {
     return <LoginPage />;
   }
 

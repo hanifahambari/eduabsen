@@ -27,15 +27,15 @@ export const SettingsView: React.FC = () => {
   } = useApp();
 
   // Settings form state (GPS/Geofencing only - School identity moved to MasterDataView > Data Lembaga)
-  const [latitude, setLatitude] = useState(config.latitude.toString());
-  const [longitude, setLongitude] = useState(config.longitude.toString());
-  const [radiusMeter, setRadiusMeter] = useState(config.radiusMeter.toString());
+  const [latitude, setLatitude] = useState(config?.latitude?.toString() ?? '-6.2088');
+  const [longitude, setLongitude] = useState(config?.longitude?.toString() ?? '106.8456');
+  const [radius_meter, setradius_meter] = useState(config?.radius_meter?.toString() ?? '100');
   const [saveAlert, setSaveAlert] = useState(false);
 
   React.useEffect(() => {
-    setLatitude(config.latitude.toString());
-    setLongitude(config.longitude.toString());
-    setRadiusMeter(config.radiusMeter.toString());
+    setLatitude(config?.latitude?.toString() ?? '-6.2088');
+    setLongitude(config?.longitude?.toString() ?? '106.8456');
+    setradius_meter(config?.radius_meter?.toString() ?? '100');
   }, [config]);
 
   // GPS detection state
@@ -48,10 +48,13 @@ export const SettingsView: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const rad = parseInt(radius_meter, 10);
     updateConfig({
-      latitude: parseFloat(latitude) || config.latitude,
-      longitude: parseFloat(longitude) || config.longitude,
-      radiusMeter: parseInt(radiusMeter, 10) || config.radiusMeter,
+      latitude: isNaN(lat) ? (config?.latitude ?? -6.2088) : lat,
+      longitude: isNaN(lng) ? (config?.longitude ?? 106.8456) : lng,
+      radius_meter: isNaN(rad) ? (config?.radius_meter ?? 100) : rad,
     });
     setSaveAlert(true);
     setTimeout(() => setSaveAlert(false), 3000);
@@ -75,19 +78,19 @@ export const SettingsView: React.FC = () => {
     }
   };
 
-  const handleDownloadBackup = () => {
-    const jsonStr = exportDatabaseJson();
+  const handleDownloadBackup = async () => {
+    const jsonStr = await exportDatabaseJson();
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Backup_Absensi_${config.nama.replace(/\s+/g, '_')}_${new Date().toISOString().substring(0, 10)}.json`;
+    a.download = `Backup_Absensi_${config?.nama?.replace(/\s+/g, '_') || 'Madrasah'}_${new Date().toISOString().substring(0, 10)}.json`;
     a.click();
   };
 
-  const handleExecuteRestore = () => {
+  const handleExecuteRestore = async () => {
     if (!restoreJson.trim()) return;
-    const ok = importDatabaseJson(restoreJson);
+    const ok = await importDatabaseJson(restoreJson);
     if (ok) {
       alert('Pemulihan database berhasil!');
       setShowRestoreModal(false);
@@ -166,8 +169,8 @@ export const SettingsView: React.FC = () => {
                   min="20"
                   max="500"
                   required
-                  value={radiusMeter}
-                  onChange={(e) => setRadiusMeter(e.target.value)}
+                  value={radius_meter}
+                  onChange={(e) => setradius_meter(e.target.value)}
                   className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg font-bold text-emerald-800"
                 />
               </div>
@@ -316,8 +319,8 @@ export const SettingsView: React.FC = () => {
                     {log.detail}
                   </p>
                   <p className="text-[10px] text-slate-400">
-                    Oleh: <span className="font-medium text-slate-600">{log.actorName}</span> (
-                    {log.actorRole.toUpperCase()})
+                    Oleh: <span className="font-medium text-slate-600">{log.actor_name}</span> (
+                    {log.actor_role.toUpperCase()})
                   </p>
                 </div>
               ))}

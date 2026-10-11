@@ -55,8 +55,8 @@ export const TeacherAttendanceView: React.FC = () => {
     source: 'device' | 'preset';
     label: string;
   }>({
-    lat: config.latitude + 0.0001,
-    lng: config.longitude + 0.0001,
+    lat: (config?.latitude ?? -6.2088) + 0.0001,
+    lng: (config?.longitude ?? 106.8456) + 0.0001,
     distance: 18,
     accuracy: 12,
     source: 'preset',
@@ -84,14 +84,14 @@ export const TeacherAttendanceView: React.FC = () => {
   // Today's attendance for the active teacher
   const todayRecord = attendance.find(
     (a) =>
-      a.targetType === 'guru' &&
-      a.targetId === currentUser.id &&
+      a.target_type === 'guru' &&
+      a.target_id === currentUser.id &&
       a.date === currentDate
   );
 
   // All history for this teacher
   const teacherHistory = attendance
-    .filter((a) => a.targetType === 'guru' && a.targetId === currentUser.id)
+    .filter((a) => a.target_type === 'guru' && a.target_id === currentUser.id)
     .sort((a, b) => b.date.localeCompare(a.date));
 
   // Fetch real device GPS
@@ -100,11 +100,13 @@ export const TeacherAttendanceView: React.FC = () => {
     setLocationError(null);
     try {
       const pos = await getCurrentPosition();
+      const schoolLat = config?.latitude ?? -6.2088;
+      const schoolLng = config?.longitude ?? 106.8456;
       const dist = calculateDistanceInMeters(
         pos.latitude,
         pos.longitude,
-        config.latitude,
-        config.longitude
+        schoolLat,
+        schoolLng
       );
       setCurrentCoords({
         lat: pos.latitude,
@@ -127,9 +129,11 @@ export const TeacherAttendanceView: React.FC = () => {
     setLocationError(null);
     if (type === 'in-radius') {
       const dist = 22;
+      const schoolLat = config?.latitude ?? -6.2088;
+      const schoolLng = config?.longitude ?? 106.8456;
       setCurrentCoords({
-        lat: config.latitude + 0.00015,
-        lng: config.longitude + 0.00012,
+        lat: schoolLat + 0.00015,
+        lng: schoolLng + 0.00012,
         accuracy: 8,
         distance: dist,
         source: 'preset',
@@ -137,9 +141,11 @@ export const TeacherAttendanceView: React.FC = () => {
       });
     } else if (type === 'near-gate') {
       const dist = 48;
+      const schoolLat = config?.latitude ?? -6.2088;
+      const schoolLng = config?.longitude ?? 106.8456;
       setCurrentCoords({
-        lat: config.latitude + 0.00035,
-        lng: config.longitude + 0.00025,
+        lat: schoolLat + 0.00035,
+        lng: schoolLng + 0.00025,
         accuracy: 10,
         distance: dist,
         source: 'preset',
@@ -147,9 +153,11 @@ export const TeacherAttendanceView: React.FC = () => {
       });
     } else {
       const dist = 380;
+      const schoolLat = config?.latitude ?? -6.2088;
+      const schoolLng = config?.longitude ?? 106.8456;
       setCurrentCoords({
-        lat: config.latitude + 0.003,
-        lng: config.longitude + 0.003,
+        lat: schoolLat + 0.003,
+        lng: schoolLng + 0.003,
         accuracy: 15,
         distance: dist,
         source: 'preset',
@@ -158,7 +166,7 @@ export const TeacherAttendanceView: React.FC = () => {
     }
   };
 
-  const isWithinRadius = currentCoords.distance <= config.radiusMeter;
+  const isWithinRadius = currentCoords.distance <= (config?.radius_meter ?? 100);
 
   // Open confirmation modal for attendance
   const openAttendanceConfirm = (type: 'in' | 'out') => {
@@ -167,9 +175,9 @@ export const TeacherAttendanceView: React.FC = () => {
   };
 
   // Execute attendance after confirmation
-  const executeAttendance = (type: 'in' | 'out') => {
+  const executeAttendance = async (type: 'in' | 'out') => {
     setActionAlert(null);
-    const result = recordTeacherAttendance(type, {
+    const result = await recordTeacherAttendance(type, {
       lat: currentCoords.lat,
       lng: currentCoords.lng,
       distance: currentCoords.distance,
@@ -201,20 +209,22 @@ export const TeacherAttendanceView: React.FC = () => {
     setPendingAttendanceType(null);
   };
 
-  const handleCorrectionSubmit = (e: React.FormEvent) => {
+  const handleCorrectionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!corReason.trim()) return;
 
     try {
-      submitCorrectionRequest({
-        targetType: 'guru',
-        targetId: currentUser.id,
-        targetName: currentUser.nama,
-        targetIdentifier: currentUser.identifier,
+      await submitCorrectionRequest({
+        attendance_id: null,
+        target_type: 'guru',
+        target_id: currentUser.id,
+        target_name: currentUser.nama,
+        target_identifier: currentUser.identifier,
+        rombel: null,
         date: corDate,
-        requestedCheckIn: corInTime + ':00',
-        requestedCheckOut: corOutTime + ':00',
-        requestedStatus: 'Hadir',
+        requested_check_in: corInTime + ':00',
+        requested_check_out: corOutTime + ':00',
+        requested_status: 'Hadir',
         reason: corReason,
       });
 
@@ -355,7 +365,7 @@ export const TeacherAttendanceView: React.FC = () => {
                   </span>
                 </div>
                 <span className="font-mono text-[11px] font-semibold tabular-nums">
-                  Batas Max: {config.radiusMeter}m
+                  Batas Max: {config?.radius_meter}m
                 </span>
               </div>
 
@@ -363,7 +373,7 @@ export const TeacherAttendanceView: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-slate-500">Titik Madrasah:</span>
                   <span className="font-mono text-[11px] text-slate-800">
-                    {config.latitude.toFixed(5)}, {config.longitude.toFixed(5)}
+                    {config?.latitude.toFixed(5)}, {config?.longitude.toFixed(5)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -381,8 +391,8 @@ export const TeacherAttendanceView: React.FC = () => {
                 {currentCoords.accuracy !== undefined && (
                   <div className="flex justify-between border-t border-slate-200/80 pt-1.5">
                     <span className="text-slate-500">Akurasi GPS:</span>
-                    <span className={`font-mono text-[11px] font-semibold ${currentCoords.accuracy <= config.accuracyThresholdMeter ? 'text-emerald-700' : 'text-amber-700'}`}>
-                      ±{currentCoords.accuracy}m {currentCoords.accuracy <= config.accuracyThresholdMeter ? '(Valid)' : '(Di Atas Batas)'}
+                    <span className={`font-mono text-[11px] font-semibold ${currentCoords.accuracy <= (config?.accuracy_threshold_meter ?? 50) ? 'text-emerald-700' : 'text-amber-700'}`}>
+                      ±{currentCoords.accuracy}m {currentCoords.accuracy <= (config?.accuracy_threshold_meter ?? 50) ? '(Valid)' : '(Di Atas Batas)'}
                     </span>
                   </div>
                 )}
@@ -494,7 +504,7 @@ export const TeacherAttendanceView: React.FC = () => {
               className={`mt-3 p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
                 !myScheduleToday.aktif
                   ? 'bg-amber-50/80 border-amber-200 text-amber-900'
-                  : myScheduleToday.isOverride
+                  : myScheduleToday.is_override
                   ? 'bg-indigo-50/80 border-indigo-200 text-indigo-900'
                   : 'bg-slate-50 border-slate-200 text-slate-800'
               }`}
@@ -504,7 +514,7 @@ export const TeacherAttendanceView: React.FC = () => {
                   className={`w-4 h-4 shrink-0 ${
                     !myScheduleToday.aktif
                       ? 'text-amber-600'
-                      : myScheduleToday.isOverride
+                      : myScheduleToday.is_override
                       ? 'text-indigo-600'
                       : 'text-emerald-600'
                   }`}
@@ -513,7 +523,7 @@ export const TeacherAttendanceView: React.FC = () => {
                   <span className="font-bold">
                     {!myScheduleToday.aktif
                       ? 'Hari Bebas Mengajar / Off'
-                      : myScheduleToday.isOverride
+                      : myScheduleToday.is_override
                       ? 'Jadwal Khusus Mengajar (Override)'
                       : 'Jadwal Standar Madrasah'}
                     :
@@ -521,14 +531,14 @@ export const TeacherAttendanceView: React.FC = () => {
                   <span>
                     {!myScheduleToday.aktif
                       ? 'Hari ini Anda tidak memiliki jadwal tugas mengajar. Presensi bersifat opsional.'
-                      : `Masuk: ${myScheduleToday.jamMasuk} s.d. Pulang: ${myScheduleToday.jamPulang} WIB (Batas Masuk: ${myScheduleToday.batasTerlambat} WIB)`}
+                      : `Masuk: ${myScheduleToday.jam_masuk} s.d. Pulang: ${myScheduleToday.jam_pulang} WIB (Batas Masuk: ${myScheduleToday.batas_terlambat} WIB)`}
                   </span>
                 </div>
               </div>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white border border-current shrink-0">
                 {!myScheduleToday.aktif
                   ? 'Off'
-                  : myScheduleToday.isOverride
+                  : myScheduleToday.is_override
                   ? 'Override'
                   : 'Standar'}
               </span>
@@ -539,14 +549,14 @@ export const TeacherAttendanceView: React.FC = () => {
               {/* Check-In Card */}
               <div
                 className={`p-4 rounded-xl border ${
-                  todayRecord?.checkInTime
+                  todayRecord?.check_in_time
                     ? 'bg-emerald-50/50 border-emerald-200'
                     : 'bg-slate-50 border-slate-200'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span className="font-medium">Absen Masuk</span>
-                  {todayRecord?.checkInTime ? (
+                  {todayRecord?.check_in_time ? (
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
                   ) : (
                     <Clock className="w-4 h-4 text-slate-400" />
@@ -554,12 +564,12 @@ export const TeacherAttendanceView: React.FC = () => {
                 </div>
                 <div className="mt-2">
                   <span className="font-mono text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">
-                    {todayRecord?.checkInTime || '--:--'}
+                    {todayRecord?.check_in_time || '--:--'}
                   </span>
                   <span className="text-xs text-slate-500 ml-1">WIB</span>
                 </div>
                 <div className="mt-1 text-[11px]">
-                  {todayRecord?.checkInTime ? (
+                  {todayRecord?.check_in_time ? (
                     <span
                       className={`font-semibold ${
                         todayRecord.flags.includes('Terlambat')
@@ -570,14 +580,14 @@ export const TeacherAttendanceView: React.FC = () => {
                       {todayRecord.flags.includes('Terlambat')
                         ? 'Terlambat'
                         : 'Tepat Waktu'}{' '}
-                      • {todayRecord.checkInDistance}m
+                      • {todayRecord.check_in_distance}m
                     </span>
                   ) : (
                     <span className="text-slate-500">
                       Batas tepat waktu:{' '}
-                      {myScheduleToday.batasTerlambat !== '-'
-                        ? myScheduleToday.batasTerlambat
-                        : schedule.batasTerlambatGuru}{' '}
+                      {myScheduleToday.batas_terlambat !== '-'
+                        ? myScheduleToday.batas_terlambat
+                        : schedule?.batas_terlambat_guru ?? '-'}
                       WIB
                     </span>
                   )}
@@ -587,14 +597,14 @@ export const TeacherAttendanceView: React.FC = () => {
               {/* Check-Out Card */}
               <div
                 className={`p-4 rounded-xl border ${
-                  todayRecord?.checkOutTime
+                  todayRecord?.check_out_time
                     ? 'bg-blue-50/50 border-blue-200'
                     : 'bg-slate-50 border-slate-200'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span className="font-medium">Absen Pulang</span>
-                  {todayRecord?.checkOutTime ? (
+                  {todayRecord?.check_out_time ? (
                     <CheckCircle className="w-4 h-4 text-blue-600" />
                   ) : (
                     <Clock className="w-4 h-4 text-slate-400" />
@@ -602,21 +612,21 @@ export const TeacherAttendanceView: React.FC = () => {
                 </div>
                 <div className="mt-2">
                   <span className="font-mono text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">
-                    {todayRecord?.checkOutTime || '--:--'}
+                    {todayRecord?.check_out_time || '--:--'}
                   </span>
                   <span className="text-xs text-slate-500 ml-1">WIB</span>
                 </div>
                 <div className="mt-1 text-[11px]">
-                  {todayRecord?.checkOutTime ? (
+                  {todayRecord?.check_out_time ? (
                     <span className="text-blue-700 font-semibold">
-                      Tercatat Pulang • {todayRecord.checkOutDistance}m
+                      Tercatat Pulang • {todayRecord.check_out_distance}m
                     </span>
                   ) : (
                     <span className="text-slate-500">
                       Jam kepulangan:{' '}
-                      {myScheduleToday.jamPulang !== '-'
-                        ? myScheduleToday.jamPulang
-                        : schedule.jamPulangGuru}{' '}
+                      {myScheduleToday.jam_pulang !== '-'
+                        ? myScheduleToday.jam_pulang
+                        : schedule?.jam_pulang_guru ?? '-'}
                       WIB
                     </span>
                   )}
@@ -626,7 +636,7 @@ export const TeacherAttendanceView: React.FC = () => {
 
             {/* 1-Tap Attendance Primary Buttons */}
             <div className="space-y-3">
-              {!todayRecord?.checkInTime ? (
+              {!todayRecord?.check_in_time ? (
                 <button
                   type="button"
                   onClick={() => openAttendanceConfirm('in')}
@@ -644,7 +654,7 @@ export const TeacherAttendanceView: React.FC = () => {
                       : `Tidak Bisa Absen (Di Luar Radius: ${currentCoords.distance}m)`}
                   </span>
                 </button>
-              ) : !todayRecord?.checkOutTime ? (
+              ) : !todayRecord?.check_out_time ? (
                 <button
                   type="button"
                   onClick={() => openAttendanceConfirm('out')}
@@ -705,13 +715,13 @@ export const TeacherAttendanceView: React.FC = () => {
                           {rec.date}
                         </td>
                         <td className="py-2.5 px-3 font-mono tabular-nums text-slate-800">
-                          {rec.checkInTime ? rec.checkInTime.substring(0, 5) : '-'}
+                          {rec.check_in_time ? rec.check_in_time.substring(0, 5) : '-'}
                         </td>
                         <td className="py-2.5 px-3 font-mono tabular-nums text-slate-800">
-                          {rec.checkOutTime ? rec.checkOutTime.substring(0, 5) : '-'}
+                          {rec.check_out_time ? rec.check_out_time.substring(0, 5) : '-'}
                         </td>
                         <td className="py-2.5 px-3 font-mono tabular-nums text-slate-600">
-                          {rec.checkInDistance !== undefined ? `${rec.checkInDistance}m` : '-'}
+                          {rec.check_in_distance !== undefined ? `${rec.check_in_distance}m` : '-'}
                         </td>
                         <td className="py-2.5 px-3 font-semibold">
                           <span
@@ -724,7 +734,7 @@ export const TeacherAttendanceView: React.FC = () => {
                             }
                           >
                             {rec.status}
-                            {rec.isCorrected ? ' (Dikoreksi)' : ''}
+                            {rec.is_corrected ? ' (Dikoreksi)' : ''}
                           </span>
                         </td>
                         <td className="py-2.5 px-3 text-slate-500 truncate max-w-[150px]">
@@ -873,7 +883,7 @@ export const TeacherAttendanceView: React.FC = () => {
                 <div className="flex items-center justify-between text-xs mt-1">
                   <span className="text-slate-500">Akurasi GPS</span>
                   <span className={`font-bold tabular-nums ${
-                    currentCoords.accuracy && currentCoords.accuracy <= config.accuracyThresholdMeter
+                    currentCoords.accuracy && currentCoords.accuracy <= (config?.accuracy_threshold_meter ?? 50)
                       ? 'text-emerald-700'
                       : 'text-amber-700'
                   }`}>
@@ -883,13 +893,13 @@ export const TeacherAttendanceView: React.FC = () => {
                 <div className="flex items-center justify-between text-xs mt-1">
                   <span className="text-slate-500">Radius Toleransi</span>
                   <span className="font-semibold text-slate-900 tabular-nums">
-                    {config.radiusMeter} meter
+                    {config?.radius_meter ?? 100} meter
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs mt-1">
                   <span className="text-slate-500">Batas Akurasi</span>
                   <span className="font-semibold text-slate-900 tabular-nums">
-                    {config.accuracyThresholdMeter} meter
+                    {config?.accuracy_threshold_meter} meter
                   </span>
                 </div>
               </div>

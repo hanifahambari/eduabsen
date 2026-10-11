@@ -40,7 +40,7 @@ export const StudentScannerView: React.FC = () => {
   // Mode: Masuk or Pulang
   const [scanType, setScanType] = useState<'in' | 'out'>('in');
   const [selectedClass, setSelectedClass] = useState<string>(
-    currentUser.waliKelasRombel || 'XII-MIPA 1'
+    currentUser.wali_kelas_rombel || 'XII-MIPA 1'
   );
   const [continuousScan, setContinuousScan] = useState<boolean>(true);
 
@@ -105,11 +105,11 @@ export const StudentScannerView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Process student attendance record
-  const executeScan = useCallback((identifier: string) => {
+  const executeScan = useCallback(async (identifier: string) => {
     const cleanId = identifier.trim();
     if (!cleanId) return;
 
-    const res = recordStudentAttendance(
+    const res = await recordStudentAttendance(
       cleanId,
       scanType,
       currentUser.id,
@@ -224,11 +224,13 @@ export const StudentScannerView: React.FC = () => {
     setGpsError(null);
     try {
       const pos = await getCurrentPosition();
+      const schoolLat = config?.latitude ?? -6.2088;
+      const schoolLng = config?.longitude ?? 106.8456;
       const dist = calculateDistanceInMeters(
         pos.latitude,
         pos.longitude,
-        config.latitude,
-        config.longitude
+        schoolLat,
+        schoolLng
       );
       setTeacherGps({
         lat: pos.latitude,
@@ -566,7 +568,7 @@ export const StudentScannerView: React.FC = () => {
                       {teacherGps ? (
                         <>
                           <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium ${
-                            teacherGps.accuracy <= config.accuracyThresholdMeter
+                            teacherGps.accuracy <= (config?.accuracy_threshold_meter ?? 50)
                               ? 'bg-emerald-600/90 text-white'
                               : 'bg-amber-600/90 text-white'
                           }`}>
@@ -820,12 +822,12 @@ export const StudentScannerView: React.FC = () => {
                 filteredStudents.map((st) => {
                   const todayAtt = attendance.find(
                     (a) =>
-                      a.targetType === 'siswa' &&
-                      a.targetId === st.id &&
+                      a.target_type === 'siswa' &&
+                      a.target_id === st.id &&
                       a.date === currentDate
                   );
-                  const isCheckedIn = !!todayAtt?.checkInTime;
-                  const isCheckedOut = !!todayAtt?.checkOutTime;
+                  const isCheckedIn = !!todayAtt?.check_in_time;
+                  const isCheckedOut = !!todayAtt?.check_out_time;
 
                   return (
                     <div
@@ -844,7 +846,7 @@ export const StudentScannerView: React.FC = () => {
                         {scanType === 'in' ? (
                           isCheckedIn ? (
                             <span className="text-[11px] font-semibold text-emerald-700 font-mono tabular-nums bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              Hadir {todayAtt.checkInTime?.substring(0, 5)}
+                              Hadir {todayAtt.check_in_time?.substring(0, 5)}
                             </span>
                           ) : (
                             <button
@@ -856,7 +858,7 @@ export const StudentScannerView: React.FC = () => {
                           )
                         ) : isCheckedOut ? (
                           <span className="text-[11px] font-semibold text-blue-700 font-mono tabular-nums bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                            Pulang {todayAtt.checkOutTime?.substring(0, 5)}
+                            Pulang {todayAtt.check_out_time?.substring(0, 5)}
                           </span>
                         ) : !isCheckedIn ? (
                           <span className="text-[10px] text-slate-400 italic">
@@ -979,9 +981,9 @@ export const StudentScannerView: React.FC = () => {
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 p-4">
             {classStudents.map((st) => {
-              const todayAtt = attendance.find(a => a.targetType === 'siswa' && a.targetId === st.id && a.date === currentDate);
-              const isCheckedIn = !!todayAtt?.checkInTime;
-              const isCheckedOut = !!todayAtt?.checkOutTime;
+              const todayAtt = attendance.find(a => a.target_type === 'siswa' && a.target_id === st.id && a.date === currentDate);
+              const isCheckedIn = !!todayAtt?.check_in_time;
+              const isCheckedOut = !!todayAtt?.check_out_time;
               return (
                 <div key={st.id} className="py-2.5 flex items-center justify-between gap-2 hover:bg-slate-50/80 px-2 rounded-lg">
                   <div className="min-w-0">
@@ -990,11 +992,11 @@ export const StudentScannerView: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {scanType === 'in' ? isCheckedIn ? (
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Hadir {todayAtt.checkInTime?.substring(0,5)}</span>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Hadir {todayAtt.check_in_time?.substring(0,5)}</span>
                     ) : (
                       <button onClick={() => { executeScan(st.nisn); setShowRoster(false); }} className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-sm font-semibold">+ Hadir</button>
                     ) : isCheckedOut ? (
-                      <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Pulang {todayAtt.checkOutTime?.substring(0,5)}</span>
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Pulang {todayAtt.check_out_time?.substring(0,5)}</span>
                     ) : !isCheckedIn ? (
                       <span className="text-xs text-slate-400 italic">Belum Masuk</span>
                     ) : (

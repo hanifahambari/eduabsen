@@ -51,8 +51,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       case 'kepala':
         return 'Kepala Madrasah';
       case 'guru':
-        return currentUser.isWaliKelas
-          ? `Guru / Wali Kelas ${currentUser.waliKelasRombel || ''}`
+        return currentUser.is_wali_kelas
+          ? `Guru / Wali Kelas ${currentUser.wali_kelas_rombel || ''}`
           : 'Guru Mapel';
       case 'siswa':
         return `Siswa (${currentUser.rombel || ''})`;
@@ -66,14 +66,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       {/* Sidebar Header - Brand */}
       <div className="flex items-center gap-3 p-4 border-b border-slate-200 shrink-0">
         <div className="w-10 h-10 rounded-lg bg-emerald-700 flex items-center justify-center text-white font-bold text-lg shadow-xs shrink-0">
-          {config.logo ? (
-            <img src={config.logo} alt={config.nama} className="w-full h-full object-contain p-1 rounded bg-white" />
+          {config?.logo ? (
+            <img src={config?.logo} alt={config?.nama} className="w-full h-full object-contain p-1 rounded bg-white" />
           ) : (
             <span className="font-serif">M</span>
           )}
         </div>
         <div className="min-w-0 flex-1 overflow-hidden">
-          <h1 className="text-sm font-bold text-slate-900 truncate">{config.nama}</h1>
+          <h1 className="text-sm font-bold text-slate-900 truncate">{config?.nama}</h1>
           <p className="text-[10px] text-slate-500 truncate">Presensi Digital Geo-tagging</p>
         </div>
       </div>

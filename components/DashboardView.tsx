@@ -71,12 +71,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
 
   // Today's attendance calculation
   const todayAttendance = attendance.filter((a) => a.date === currentDate);
-  const teacherTodayAtt = todayAttendance.filter((a) => a.targetType === 'guru');
-  const studentTodayAtt = todayAttendance.filter((a) => a.targetType === 'siswa');
+  const teacherTodayAtt = todayAttendance.filter((a) => a.target_type === 'guru');
+  const studentTodayAtt = todayAttendance.filter((a) => a.target_type === 'siswa');
 
   const todayDayIndex = new Date().getDay();
   const teachersScheduledToday = teachers.filter(
-    (t) => getTeacherEffectiveSchedule(t, todayDayIndex, schedule).aktif
+    (t) => getTeacherEffectiveSchedule(t, todayDayIndex, schedule ?? undefined).aktif
   );
   const totalTeachersActiveToday = teachersScheduledToday.length;
   const totalTeachers = teachers.length;
@@ -106,12 +106,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
   // Current user's own status today
   const myRecord = todayAttendance.find(
     (a) =>
-      a.targetId === currentUser.id &&
-      a.targetType === (currentUser.role === 'siswa' ? 'siswa' : 'guru')
+      a.target_id === currentUser.id &&
+      a.target_type === (currentUser.role === 'siswa' ? 'siswa' : 'guru')
   );
 
-  const handleTutupHari = () => {
-    const alpaCreated = autoCloseDayAlpa();
+  const handleTutupHari = async () => {
+    const alpaCreated = await autoCloseDayAlpa();
     if (alpaCreated === -1) {
       setTutupHariAlert(
         "Hari ini adalah hari libur madrasah (atau libur mingguan Jum'at). Proses tutup hari tidak membuat status Alpa."
@@ -126,7 +126,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
 
   // Student specific statistics
   const myAttendanceHistory = attendance
-    .filter((a) => a.targetType === 'siswa' && a.targetId === (currentStudent?.id || currentUser.id))
+    .filter((a) => a.target_type === 'siswa' && a.target_id === (currentStudent?.id || currentUser.id))
     .sort((a, b) => b.date.localeCompare(a.date));
 
   // If role is Siswa, show dedicated Student-First Portal
@@ -139,7 +139,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">
                 <span className="w-2 h-2 rounded-full bg-emerald-700 animate-pulse"></span>
-                <span>Portal Presensi Digital Siswa • {config.nama}</span>
+                <span>Portal Presensi Digital Siswa • {config?.nama}</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 Halo, {currentStudent.nama}
@@ -167,7 +167,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                   <GraduationCap className="w-5 h-5 text-emerald-200" />
                 </div>
                 <h3 className="text-xs font-bold tracking-tight uppercase">
-                  {config.nama}
+                  {config?.nama}
                 </h3>
                 <p className="text-[10px] text-emerald-200 font-medium">
                   KARTU TANDA PRESENSI SISWA
@@ -199,7 +199,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 w-full text-[10px] text-slate-400 font-mono flex justify-between">
-                  <span>NSM: {config.nsm}</span>
+                  <span>NSM: {config?.nsm}</span>
                   <span>TAP & SCAN</span>
                   <span>TP 2026/2027</span>
                 </div>
@@ -221,23 +221,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
                   <span className="text-[10px] font-medium text-slate-500 block">Absen Masuk</span>
                   <span className="font-mono text-lg font-bold text-slate-900 tabular-nums mt-0.5 block">
-                    {myRecord?.checkInTime ? `${myRecord.checkInTime.substring(0, 5)} WIB` : 'Belum Absen'}
+                    {myRecord?.check_in_time ? `${myRecord.check_in_time.substring(0, 5)} WIB` : 'Belum Absen'}
                   </span>
                   <span className="text-[10px] font-semibold text-emerald-700 mt-1 block">
-                    {myRecord?.checkInTime
+                    {myRecord?.check_in_time
                       ? myRecord.flags.includes('Terlambat')
                         ? '⚠️ Terlambat Masuk'
                         : '✓ Tepat Waktu'
-                      : `Batas: ${schedule.batasTerlambatSiswa} WIB`}
+                      : `Batas: ${schedule?.batas_terlambat_siswa} WIB`}
                   </span>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
                   <span className="text-[10px] font-medium text-slate-500 block">Absen Pulang</span>
                   <span className="font-mono text-lg font-bold text-slate-900 tabular-nums mt-0.5 block">
-                    {myRecord?.checkOutTime ? `${myRecord.checkOutTime.substring(0, 5)} WIB` : 'Belum Absen'}
+                    {myRecord?.check_out_time ? `${myRecord.check_out_time.substring(0, 5)} WIB` : 'Belum Absen'}
                   </span>
                   <span className="text-[10px] text-slate-500 mt-1 block">
-                    {myRecord?.checkOutTime ? '✓ Tercatat Pulang' : `Jam Pulang: ${schedule.jamPulangSiswa} WIB`}
+                    {myRecord?.check_out_time ? '✓ Tercatat Pulang' : `Jam Pulang: ${schedule?.jam_pulang_siswa} WIB`}
                   </span>
                 </div>
               </div>
@@ -264,11 +264,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                 </div>
                 <div className="p-2.5 bg-slate-50/80 rounded-lg border border-slate-100">
                   <span className="text-slate-400 block text-[10px]">Nama Orang Tua / Wali</span>
-                  <span className="font-semibold text-slate-800">{currentStudent.namaWali || '-'}</span>
+                  <span className="font-semibold text-slate-800">{currentStudent.nama_wali || '-'}</span>
                 </div>
                 <div className="p-2.5 bg-slate-50/80 rounded-lg border border-slate-100">
                   <span className="text-slate-400 block text-[10px]">WhatsApp Wali</span>
-                  <span className="font-mono text-slate-800">{currentStudent.noWa || '-'}</span>
+                  <span className="font-mono text-slate-800">{currentStudent.no_wa || '-'}</span>
                 </div>
                 <div className="p-2.5 bg-slate-50/80 rounded-lg border border-slate-100">
                   <span className="text-slate-400 block text-[10px]">Email Siswa</span>
@@ -283,12 +283,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
   }
 
   // Teacher / Kepala / Admin Dashboard View
-  const isWali = currentUser.role === 'guru' && currentUser.isWaliKelas;
+  const isWali = currentUser.role === 'guru' && currentUser.is_wali_kelas;
   const waliClassStudents = isWali
-    ? students.filter((s) => s.rombel === currentUser.waliKelasRombel)
+    ? students.filter((s) => s.rombel === currentUser.wali_kelas_rombel)
     : [];
   const waliClassTodayAtt = isWali
-    ? todayAttendance.filter((a) => a.targetType === 'siswa' && a.rombel === currentUser.waliKelasRombel)
+    ? todayAttendance.filter((a) => a.target_type === 'siswa' && a.rombel === currentUser.wali_kelas_rombel)
     : [];
   const waliHadir = waliClassTodayAtt.filter((a) => a.status === 'Hadir').length;
 
@@ -300,7 +300,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">
               <span className="w-2 h-2 rounded-full bg-emerald-700 animate-pulse"></span>
-              <span>Sistem Absensi Online • Zona {config.zonaWaktu}</span>
+              <span>Sistem Absensi Online • Zona {config?.zona_waktu}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
               Selamat datang, {currentUser.nama}
@@ -310,9 +310,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
               <span aria-hidden="true">•</span>
               <span className="font-mono font-medium text-slate-900">{currentTime} WIB</span>
               <span aria-hidden="true">•</span>
-              <span>{config.nama}</span>
+              <span>{config?.nama}</span>
               <span aria-hidden="true">•</span>
-              <span>Radius Toleransi {config.radiusMeter}m</span>
+              <span>Radius Toleransi {config?.radius_meter}m</span>
             </div>
           </div>
 
@@ -327,9 +327,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                 >
                   <MapPin className="w-4 h-4" />
                   <span>
-                    {!myRecord?.checkInTime
+                    {!myRecord?.check_in_time
                       ? 'Pintas Absen Masuk (GPS)'
-                      : !myRecord.checkOutTime
+                      : !myRecord.check_out_time
                       ? 'Pintas Absen Pulang (GPS)'
                       : 'Presensi Lengkap Hari Ini'}
                   </span>
@@ -376,7 +376,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
           <div>
             <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-200">
               <GraduationCap className="w-4 h-4" />
-              <span>Kelas Binaan Anda: {currentUser.waliKelasRombel}</span>
+              <span>Kelas Binaan Anda: {currentUser.wali_kelas_rombel}</span>
             </div>
             <p className="text-xs text-emerald-100 mt-0.5">
               Kehadiran hari ini: <span className="font-mono font-bold">{waliHadir}</span> dari{' '}
@@ -474,11 +474,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
             </div>
             <div className="mt-2">
               <div className="text-sm font-semibold text-slate-800">
-                Masuk: <span className="font-mono text-slate-900">{schedule.jamMasukGuru}</span> s.d.{' '}
-                <span className="font-mono text-red-600">{schedule.batasTerlambatGuru}</span>
+                Masuk: <span className="font-mono text-slate-900">{schedule?.jam_masuk_guru}</span> s.d.{' '}
+                <span className="font-mono text-red-600">{schedule?.batas_terlambat_guru}</span>
               </div>
               <div className="text-xs text-slate-500 mt-1">
-                Pulang: <span className="font-mono text-slate-900">{schedule.jamPulangGuru} WIB</span>
+                Pulang: <span className="font-mono text-slate-900">{schedule?.jam_pulang_guru} WIB</span>
               </div>
             </div>
             <div className="mt-2 text-[11px] text-emerald-700 font-medium flex items-center justify-between">
@@ -491,7 +491,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
         /* Guru & Wali Kelas: Status Jam Kerja & Kehadiran Mandiri */
         (() => {
           const myTeacherObj = teachers.find((t) => t.id === currentUser.id);
-          const myEffSched = getTeacherEffectiveSchedule(myTeacherObj, todayDayIndex, schedule);
+          const myEffSched = getTeacherEffectiveSchedule(myTeacherObj, todayDayIndex, schedule ?? undefined);
           return (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
@@ -503,14 +503,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                       !myEffSched.aktif
                         ? 'bg-amber-100 text-amber-800'
-                        : myEffSched.isOverride
+                        : myEffSched.is_override
                         ? 'bg-indigo-100 text-indigo-800'
                         : 'bg-emerald-100 text-emerald-800'
                     }`}
                   >
                     {!myEffSched.aktif
                       ? 'Off / Bebas Mengajar'
-                      : myEffSched.isOverride
+                      : myEffSched.is_override
                       ? 'Override Khusus'
                       : 'Standar Madrasah'}
                   </span>
@@ -523,12 +523,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                   ) : (
                     <>
                       <div className="text-sm font-semibold text-slate-800">
-                        Masuk: <span className="font-mono text-slate-900">{myEffSched.jamMasuk}</span>{' '}
+                        Masuk: <span className="font-mono text-slate-900">{myEffSched.jam_masuk}</span>{' '}
                         s.d. Batas:{' '}
-                        <span className="font-mono text-red-600">{myEffSched.batasTerlambat}</span>
+                        <span className="font-mono text-red-600">{myEffSched.batas_terlambat}</span>
                       </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        Pulang: <span className="font-mono text-slate-900">{myEffSched.jamPulang} WIB</span>
+                        Pulang: <span className="font-mono text-slate-900">{myEffSched.jam_pulang} WIB</span>
                       </div>
                     </>
                   )}
@@ -546,25 +546,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-base sm:text-lg font-bold text-slate-900">
-                    {myRecord?.checkInTime
-                      ? `Masuk: ${myRecord.checkInTime.substring(0, 5)} WIB`
+                    {myRecord?.check_in_time
+                      ? `Masuk: ${myRecord.check_in_time.substring(0, 5)} WIB`
                       : 'Belum Presensi Masuk'}
                   </span>
-                  {myRecord?.checkOutTime && (
+                  {myRecord?.check_out_time && (
                     <span className="text-xs text-slate-600">
-                      • Pulang: {myRecord.checkOutTime.substring(0, 5)} WIB
+                      • Pulang: {myRecord.check_out_time.substring(0, 5)} WIB
                     </span>
                   )}
                 </div>
                 <div className="mt-2 text-[11px]">
-                  {myRecord?.checkInTime ? (
+                  {myRecord?.check_in_time ? (
                     <span
                       className={`font-semibold ${
                         myRecord.flags.includes('Terlambat') ? 'text-amber-700' : 'text-emerald-700'
                       }`}
                     >
                       {myRecord.flags.includes('Terlambat') ? '⚠️ Terlambat Masuk' : '✓ Hadir Tepat Waktu'}{' '}
-                      (GPS: {myRecord.checkInDistance}m)
+                      (GPS: {myRecord.check_in_distance}m)
                     </span>
                   ) : (
                     <span className="text-slate-500">
@@ -631,7 +631,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                   {classes.map((cls) => {
                     const classStudents = students.filter((s) => s.rombel === cls.nama);
                     const classTodayAtt = todayAttendance.filter(
-                      (a) => a.targetType === 'siswa' && a.rombel === cls.nama
+                      (a) => a.target_type === 'siswa' && a.rombel === cls.nama
                     );
                     const present = classTodayAtt.filter((a) => a.status === 'Hadir').length;
                     const late = classTodayAtt.filter((a) => a.flags.includes('Terlambat')).length;
@@ -642,7 +642,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                     const total = classStudents.length;
                     const pct = total > 0 ? Math.round((present / total) * 100) : 0;
                     const isMyAssignedClass =
-                      currentUser.isWaliKelas && currentUser.waliKelasRombel === cls.nama;
+                      currentUser.is_wali_kelas && currentUser.wali_kelas_rombel === cls.nama;
 
                     return (
                       <tr
@@ -660,7 +660,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                           )}
                         </td>
                         <td className="py-3 px-3 text-slate-600 truncate max-w-[130px]">
-                          {cls.waliKelasNama}
+                          {cls.wali_kelas_nama}
                         </td>
                         <td className="py-3 px-3 text-center font-mono tabular-nums text-slate-700">
                           {total}
@@ -711,7 +711,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                   </div>
                 ) : (
                   todayAttendance.slice(0, 8).map((record) => {
-                    const isGuru = record.targetType === 'guru';
+                    const isGuru = record.target_type === 'guru';
                     const isLate = record.flags.includes('Terlambat');
                     return (
                       <div
@@ -721,14 +721,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-slate-900 truncate">
-                              {record.targetName}
+                              {record.target_name}
                             </p>
                             <p className="text-[11px] text-slate-500 truncate">
-                              {isGuru ? 'Guru' : record.rombel || 'Siswa'} • {record.targetIdentifier}
+                              {isGuru ? 'Guru' : record.rombel || 'Siswa'} • {record.target_identifier}
                             </p>
                           </div>
                           <span className="font-mono text-[11px] font-semibold text-slate-700 shrink-0 tabular-nums">
-                            {record.checkInTime ? record.checkInTime.substring(0, 5) : '-'} WIB
+                            {record.check_in_time ? record.check_in_time.substring(0, 5) : '-'} WIB
                           </span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-600">
@@ -743,14 +743,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                           >
                             {record.status} {isLate ? '(Terlambat)' : ''}
                           </span>
-                          {record.checkInDistance !== undefined && (
+                          {record.check_in_distance !== undefined && (
                             <span className="text-slate-400 font-mono tabular-nums">
-                              GPS: {record.checkInDistance}m
+                              GPS: {record.check_in_distance}m
                             </span>
                           )}
-                          {record.checkInScannedByName && (
+                          {record.check_in_scanned_by_name && (
                             <span className="text-slate-500 truncate max-w-[110px]">
-                              oleh {record.checkInScannedByName.split(' ')[0]}
+                              oleh {record.check_in_scanned_by_name.split(' ')[0]}
                             </span>
                           )}
                         </div>

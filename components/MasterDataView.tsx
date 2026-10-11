@@ -58,15 +58,15 @@ export const MasterDataView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'lembaga' | 'guru' | 'siswa' | 'kelas' | 'akun'>('lembaga');
 
   // State Form Data Lembaga
-  const [lNama, setLNama] = useState(config.nama);
-  const [lNsm, setLNsm] = useState(config.nsm);
-  const [lNpsm, setLNpsm] = useState(config.npsm || config.npsn);
-  const [lAlamat, setLAlamat] = useState(config.alamat);
-  const [lLogo, setLLogo] = useState(config.logo || '');
-  const [lTelepon, setLTelepon] = useState(config.telepon || '');
-  const [lEmail, setLEmail] = useState(config.email || '');
-  const [lKepala, setLKepala] = useState(config.kepalaMadrasah || '');
-  const [lNipKepala, setLNipKepala] = useState(config.nipKepala || '');
+  const [lNama, setLNama] = useState(config?.nama || '');
+  const [lNsm, setLNsm] = useState(config?.nsm || '');
+  const [lNpsm, setLNpsm] = useState(config?.npsm || config?.npsn || '');
+  const [lAlamat, setLAlamat] = useState(config?.alamat || '');
+  const [lLogo, setLLogo] = useState(config?.logo || '');
+  const [lTelepon, setLTelepon] = useState(config?.telepon || '');
+  const [lEmail, setLEmail] = useState(config?.email || '');
+  const [lKepala, setLKepala] = useState(config?.kepala_madrasah || '');
+  const [lNipKepala, setLNipKepala] = useState(config?.nip_kepala || '');
   const [showKontakLembaga, setShowKontakLembaga] = useState(false);
   const [saveLembagaSuccess, setSaveLembagaSuccess] = useState(false);
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
@@ -77,15 +77,15 @@ export const MasterDataView: React.FC = () => {
 
   // Sync state if config changes
   useEffect(() => {
-    setLNama(config.nama);
-    setLNsm(config.nsm);
-    setLNpsm(config.npsm || config.npsn);
-    setLAlamat(config.alamat);
-    setLLogo(config.logo || '');
-    setLTelepon(config.telepon || '');
-    setLEmail(config.email || '');
-    setLKepala(config.kepalaMadrasah || '');
-    setLNipKepala(config.nipKepala || '');
+    setLNama(config?.nama || '');
+    setLNsm(config?.nsm || '');
+    setLNpsm(config?.npsm || config?.npsn || '');
+    setLAlamat(config?.alamat || '');
+    setLLogo(config?.logo || '');
+    setLTelepon(config?.telepon || '');
+    setLEmail(config?.email || '');
+    setLKepala(config?.kepala_madrasah || '');
+    setLNipKepala(config?.nip_kepala || '');
   }, [config]);
 
   // Handler for Logo Upload & Compression
@@ -188,8 +188,8 @@ export const MasterDataView: React.FC = () => {
       logo: lLogo,
       telepon: lTelepon.trim(),
       email: lEmail.trim(),
-      kepalaMadrasah: lKepala.trim(),
-      nipKepala: lNipKepala.trim(),
+      kepala_madrasah: lKepala.trim(),
+      nip_kepala: lNipKepala.trim(),
     });
     setSaveLembagaSuccess(true);
     setTimeout(() => {
@@ -198,15 +198,15 @@ export const MasterDataView: React.FC = () => {
   };
 
   const handleResetLembaga = () => {
-    setLNama(config.nama);
-    setLNsm(config.nsm);
-    setLNpsm(config.npsm || config.npsn);
-    setLAlamat(config.alamat);
-    setLLogo(config.logo || '');
-    setLTelepon(config.telepon || '');
-    setLEmail(config.email || '');
-    setLKepala(config.kepalaMadrasah || '');
-    setLNipKepala(config.nipKepala || '');
+    setLNama(config?.nama || '');
+    setLNsm(config?.nsm || '');
+    setLNpsm(config?.npsm || config?.npsn || '');
+    setLAlamat(config?.alamat || '');
+    setLLogo(config?.logo || '');
+    setLTelepon(config?.telepon || '');
+    setLEmail(config?.email || '');
+    setLKepala(config?.kepala_madrasah || '');
+    setLNipKepala(config?.nip_kepala || '');
     setLogoUploadError(null);
   };
 
@@ -242,7 +242,7 @@ export const MasterDataView: React.FC = () => {
   const [classEditing, setClassEditing] = useState<ClassRoom | null>(null);
   const [cNama, setCNama] = useState('');
   const [cTingkat, setCTingkat] = useState<'X' | 'XI' | 'XII'>('X');
-  const [cWaliKelasId, setCWaliKelasId] = useState('');
+  const [cWaliKelasId, setcWaliKelasId] = useState('');
 
   // Modal State for Account
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -291,10 +291,10 @@ export const MasterDataView: React.FC = () => {
       setTNip(teacher.nip);
       setTEmail(teacher.email);
       setTMapel(teacher.mapel);
-      setTNoWa(teacher.noWa);
+      setTNoWa(teacher.no_wa);
       setTAlamat(teacher.alamat);
-      setTIsWali(!!teacher.isWaliKelas);
-      setTWaliRombel(teacher.waliKelasRombel || '');
+      setTIsWali(!!teacher.is_wali_kelas);
+      setTWaliRombel(teacher.wali_kelas_rombel || '');
     } else {
       setTeacherEditing(null);
       setTNama('');
@@ -317,10 +317,10 @@ export const MasterDataView: React.FC = () => {
         nip: tNip,
         email: tEmail,
         mapel: tMapel,
-        noWa: tNoWa,
+        no_wa: tNoWa,
         alamat: tAlamat,
-        isWaliKelas: tIsWali,
-        waliKelasRombel: tIsWali ? tWaliRombel : undefined,
+        is_wali_kelas: tIsWali,
+        wali_kelas_rombel: tIsWali ? tWaliRombel : null,
       });
     } else {
       addTeacher({
@@ -328,10 +328,12 @@ export const MasterDataView: React.FC = () => {
         nip: tNip,
         email: tEmail,
         mapel: tMapel,
-        noWa: tNoWa,
+        no_wa: tNoWa,
         alamat: tAlamat,
-        isWaliKelas: tIsWali,
-        waliKelasRombel: tIsWali ? tWaliRombel : undefined,
+        foto: null,
+        is_wali_kelas: tIsWali,
+        wali_kelas_rombel: tIsWali ? tWaliRombel : null,
+        jadwal_khusus: null,
       });
     }
     setShowTeacherModal(false);
@@ -344,9 +346,9 @@ export const MasterDataView: React.FC = () => {
       setSNisn(student.nisn);
       setSEmail(student.email);
       setSRombel(student.rombel);
-      setSNoWa(student.noWa);
+      setSNoWa(student.no_wa);
       setSAlamat(student.alamat);
-      setSNamaWali(student.namaWali || '');
+      setSNamaWali(student.nama_wali || '');
     } else {
       setStudentEditing(null);
       setSNama('');
@@ -368,9 +370,9 @@ export const MasterDataView: React.FC = () => {
         nisn: sNisn,
         email: sEmail,
         rombel: sRombel,
-        noWa: sNoWa,
+        no_wa: sNoWa,
         alamat: sAlamat,
-        namaWali: sNamaWali,
+        nama_wali: sNamaWali,
       });
     } else {
       addStudent({
@@ -378,9 +380,10 @@ export const MasterDataView: React.FC = () => {
         nisn: sNisn,
         email: sEmail,
         rombel: sRombel,
-        noWa: sNoWa,
+        no_wa: sNoWa,
         alamat: sAlamat,
-        namaWali: sNamaWali,
+        nama_wali: sNamaWali,
+        foto: null,
       });
     }
     setShowStudentModal(false);
@@ -392,12 +395,12 @@ export const MasterDataView: React.FC = () => {
       setClassEditing(cls);
       setCNama(cls.nama);
       setCTingkat(cls.tingkat);
-      setCWaliKelasId(cls.waliKelasId || '');
+      setcWaliKelasId(cls.wali_kelas_id || '');
     } else {
       setClassEditing(null);
       setCNama('');
       setCTingkat('X');
-      setCWaliKelasId('');
+      setcWaliKelasId('');
     }
     setShowClassModal(true);
   };
@@ -412,15 +415,15 @@ export const MasterDataView: React.FC = () => {
       updateClass(classEditing.id, {
         nama: cNama,
         tingkat: cTingkat,
-        waliKelasId: cWaliKelasId || undefined,
-        waliKelasNama: teachers.find((t) => t.id === cWaliKelasId)?.nama || '',
+        wali_kelas_id: cWaliKelasId || undefined,
+        wali_kelas_nama: teachers.find((t) => t.id === cWaliKelasId)?.nama || '',
       });
     } else {
       addClass({
         nama: cNama,
         tingkat: cTingkat,
-        waliKelasId: cWaliKelasId || '',
-        waliKelasNama: teachers.find((t) => t.id === cWaliKelasId)?.nama || '',
+        wali_kelas_id: cWaliKelasId || '',
+        wali_kelas_nama: teachers.find((t) => t.id === cWaliKelasId)?.nama || '',
       });
     }
     setShowClassModal(false);
@@ -435,13 +438,14 @@ export const MasterDataView: React.FC = () => {
       setAEmail(acc.email);
       setARole(acc.role);
       setAStatus(acc.status);
-      setAPassword(acc.password || '');
+      // Don't show password hash in form
+      setAPassword('');
       setAIdentifier(acc.identifier);
-      setATargetId(acc.targetId || '');
+      setATargetId(acc.target_id || '');
       setAMapel(acc.mapel || '');
       setARombel(acc.rombel || '');
-      setAIsWaliKelas(!!acc.isWaliKelas);
-      setAWaliKelasRombel(acc.waliKelasRombel || '');
+      setAIsWaliKelas(!!acc.is_wali_kelas);
+      setAWaliKelasRombel(acc.wali_kelas_rombel || '');
     } else {
       setAccountEditing(null);
       setANama('');
@@ -473,13 +477,13 @@ export const MasterDataView: React.FC = () => {
         email: aEmail,
         role: aRole,
         status: aStatus,
-        password: aPassword || undefined,
+        password_hash: aPassword || null,
         identifier: aIdentifier,
-        targetId: aTargetId || undefined,
-        mapel: aMapel || undefined,
-        rombel: aRombel || undefined,
-        isWaliKelas: aIsWaliKelas,
-        waliKelasRombel: aIsWaliKelas ? aWaliKelasRombel : undefined,
+        target_id: aTargetId || null,
+        mapel: aMapel || null,
+        rombel: aRombel || null,
+        is_wali_kelas: aIsWaliKelas,
+        wali_kelas_rombel: aIsWaliKelas ? aWaliKelasRombel : null,
       });
     } else {
       addAccount({
@@ -488,13 +492,14 @@ export const MasterDataView: React.FC = () => {
         nama: aNama,
         role: aRole,
         status: aStatus,
-        password: aPassword,
+        password_hash: aPassword,
         identifier: aIdentifier,
-        targetId: aTargetId || undefined,
-        mapel: aMapel || undefined,
-        rombel: aRombel || undefined,
-        isWaliKelas: aIsWaliKelas,
-        waliKelasRombel: aIsWaliKelas ? aWaliKelasRombel : undefined,
+        target_id: aTargetId || null,
+        mapel: aMapel || null,
+        rombel: aRombel || null,
+        is_wali_kelas: aIsWaliKelas,
+        wali_kelas_rombel: aIsWaliKelas ? aWaliKelasRombel : null,
+        last_login: null,
       });
     }
     setShowAccountModal(false);
@@ -594,7 +599,7 @@ export const MasterDataView: React.FC = () => {
             row['email'] ||
             `${nip ? nip.toLowerCase().replace(/[^a-z0-9]/g, '') : 'guru'}@madrasah.sch.id`
           ).trim();
-          const noWa = String(
+          const noWaVal = String(
             row['Nomor WhatsApp'] ||
             row['WhatsApp'] ||
             row['No WA'] ||
@@ -608,15 +613,20 @@ export const MasterDataView: React.FC = () => {
           const waliKelasRombel = String(row['Rombel Binaan'] || row['Rombel'] || row['waliKelasRombel'] || '').trim();
 
           if (nip && nama) {
+            const now = new Date().toISOString();
             parsedTeachers.push({
               nip,
               nama,
               mapel,
               email,
-              noWa,
+              no_wa: noWaVal,
               alamat,
-              isWaliKelas,
-              waliKelasRombel: isWaliKelas ? waliKelasRombel : undefined,
+              foto: null,
+              is_wali_kelas: isWaliKelas,
+              wali_kelas_rombel: isWaliKelas ? waliKelasRombel : null,
+              jadwal_khusus: null,
+              created_at: now,
+              updated_at: now,
             });
           }
         });
@@ -657,22 +667,26 @@ export const MasterDataView: React.FC = () => {
         const nama = parts[1];
         const mapel = parts[2] || 'Guru Mapel';
         const email = parts[3] || `${nip.toLowerCase().replace(/[^a-z0-9]/g, '')}@madrasah.sch.id`;
-        const noWa = parts[4] || '081200000000';
+        const noWaVal2 = parts[4] || '081200000000';
         const alamat = parts[5] || 'Alamat Madrasah';
         const isWaliRaw = (parts[6] || '').toLowerCase();
         const isWaliKelas =
           isWaliRaw === 'ya' || isWaliRaw === 'yes' || isWaliRaw === 'true' || isWaliRaw === '1' || isWaliRaw === 'y';
-        const waliKelasRombel = isWaliKelas ? (parts[7] || '') : undefined;
+        const waliKelasRombel = isWaliKelas ? (parts[7] || '') : null;
 
         parsedTeachers.push({
           nip,
           nama,
           mapel,
           email,
-          noWa,
+          no_wa: noWaVal2,
           alamat,
-          isWaliKelas,
-          waliKelasRombel,
+          foto: null,
+          is_wali_kelas: isWaliKelas,
+          wali_kelas_rombel: isWaliKelas ? waliKelasRombel : null,
+          jadwal_khusus: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
       }
     });
@@ -756,19 +770,23 @@ export const MasterDataView: React.FC = () => {
           const nama = String(row['Nama Siswa'] || row['Nama'] || row['nama'] || '').trim();
           const rombel = String(row['Rombel / Kelas'] || row['Rombel'] || row['Kelas'] || row['rombel'] || 'X-A').trim();
           const email = String(row['Email Siswa'] || row['Email'] || row['email'] || `${nisn}@siswa.madrasah.sch.id`).trim();
-          const noWa = String(row['WhatsApp Orang Tua'] || row['No WA'] || row['noWa'] || '0812000000').trim();
+          const noWaVal = String(row['WhatsApp Orang Tua'] || row['No WA'] || row['noWa'] || '0812000000').trim();
           const alamat = String(row['Alamat'] || row['alamat'] || 'Alamat Madrasah').trim();
           const namaWali = String(row['Nama Orang Tua / Wali'] || row['Nama Wali'] || row['namaWali'] || 'Wali Murid').trim();
 
           if (nisn && nama) {
+            const now = new Date().toISOString();
             parsedStudents.push({
               nisn,
               nama,
               rombel,
               email,
-              noWa,
+              no_wa: noWaVal,
               alamat,
-              namaWali,
+              nama_wali: namaWali,
+              foto: null,
+              created_at: now,
+              updated_at: now,
             });
           }
         });
@@ -808,9 +826,12 @@ export const MasterDataView: React.FC = () => {
           nama: parts[1],
           rombel: parts[2] || 'X-A',
           email: parts[3] || `${parts[0]}@siswa.madrasah.sch.id`,
-          noWa: parts[4] || '0812000000',
+          no_wa: parts[4] || '0812000000',
           alamat: parts[5] || 'Alamat Madrasah',
-          namaWali: parts[6] || 'Wali Murid',
+          nama_wali: parts[6] || 'Wali Murid',
+          foto: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
       }
     });
@@ -864,10 +885,10 @@ export const MasterDataView: React.FC = () => {
     setShowPromoteModal(true);
   };
 
-  const handleConfirmPromote = () => {
+  const handleConfirmPromote = async () => {
     setPromoteLoading(true);
     try {
-      const result = promoteStudents();
+      const result = await promoteStudents();
       setPromoteResult({ promoted: result.promoted, graduated: result.graduated });
       setPromotePreview(null);
     } catch (err) {
@@ -1408,37 +1429,12 @@ export const MasterDataView: React.FC = () => {
       {/* Tab: GURU */}
       {activeTab === 'guru' && (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-          {/* Quick Action & Stats Toolbar */}
           <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-slate-600">
               <span className="font-semibold text-slate-900">Total Terdaftar:</span>
               <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded-md">{teachers.length} Guru & Tendik</span>
               <span className="hidden sm:inline text-slate-400">•</span>
               <span className="hidden sm:inline text-slate-500">Mendukung impor massal dari berkas Excel (.xlsx / .csv)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadTeacherExcelTemplate}
-                className="px-2.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Unduh format tabel Excel kosong untuk diisi"
-              >
-                <Download className="w-3.5 h-3.5 text-slate-500" />
-                <span>Unduh Format Excel</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTeacherImportSummary(null);
-                  setTeacherImportError(null);
-                  setShowTeacherImportModal(true);
-                }}
-                className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Impor data guru dari file Excel"
-              >
-                <UploadCloud className="w-3.5 h-3.5" />
-                <span>Import Excel</span>
-              </button>
             </div>
           </div>
 
@@ -1468,15 +1464,15 @@ export const MasterDataView: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-slate-700">{t.mapel}</td>
                     <td className="py-3 px-4">
-                      {t.isWaliKelas ? (
+                      {t.is_wali_kelas ? (
                         <span className="text-emerald-800 font-semibold">
-                          Wali {t.waliKelasRombel}
+                          Wali {t.wali_kelas_rombel}
                         </span>
                       ) : (
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 font-mono text-slate-600">{t.noWa}</td>
+                    <td className="py-3 px-4 font-mono text-slate-600">{t.no_wa}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -1573,8 +1569,8 @@ export const MasterDataView: React.FC = () => {
                         <td className="py-3 px-4 font-semibold text-emerald-800">
                           {s.rombel}
                         </td>
-                        <td className="py-3 px-4 text-slate-700">{s.namaWali || '-'}</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">{s.noWa}</td>
+                        <td className="py-3 px-4 text-slate-700">{s.nama_wali || '-'}</td>
+                        <td className="py-3 px-4 font-mono text-slate-600">{s.no_wa}</td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
@@ -1645,7 +1641,7 @@ export const MasterDataView: React.FC = () => {
                             Tingkat {cls.tingkat}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-slate-800">{cls.waliKelasNama || '-'}</td>
+                        <td className="py-3 px-4 font-semibold text-slate-800">{cls.wali_kelas_nama || '-'}</td>
                         <td className="py-3 px-4 font-mono text-slate-500 tabular-nums">{count} Siswa</td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -1738,7 +1734,7 @@ export const MasterDataView: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4 font-mono text-slate-500">
-                        {acc.password || '******'}
+                        {acc.password_hash || '******'}
                       </td>
                       <td className="py-3 px-4">
                         <span
@@ -2039,12 +2035,12 @@ export const MasterDataView: React.FC = () => {
                   <label className="block font-semibold text-slate-700 mb-0.5">Wali Kelas</label>
                   <select
                     value={cWaliKelasId}
-                    onChange={(e) => setCWaliKelasId(e.target.value)}
+                    onChange={(e) => setcWaliKelasId(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white"
                   >
                     <option value="">-- Pilih Wali Kelas --</option>
                     {teachers
-                      .filter((t) => t.isWaliKelas)
+                      .filter((t) => t.is_wali_kelas)
                       .map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.nama} ({t.nip})

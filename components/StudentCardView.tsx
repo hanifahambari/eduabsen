@@ -163,10 +163,10 @@ export const StudentCardView: React.FC = () => {
           <div className="bg-white border-2 border-slate-300 rounded-2xl overflow-hidden shadow-lg card-print">
             <div className="bg-gradient-to-r from-emerald-800 to-emerald-900 p-4 text-white text-center relative">
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mx-auto mb-1.5 border-2 border-white/40 shadow-xs overflow-hidden p-1">
-                {config.logo ? (
+                {config?.logo ? (
                   <img
-                    src={config.logo}
-                    alt={config.nama}
+                    src={config?.logo}
+                    alt={config?.nama}
                     className="w-full h-full object-contain"
                   />
                 ) : (
@@ -174,13 +174,13 @@ export const StudentCardView: React.FC = () => {
                 )}
               </div>
               <h3 className="text-sm font-bold tracking-tight uppercase">
-                {config.nama}
+                {config?.nama}
               </h3>
               <p className="text-[10px] text-emerald-200 font-medium">
                 KARTU TANDA PRESENSI SISWA • TP 2026/2027
               </p>
               <p className="text-[9px] text-emerald-300/80 mt-0.5 truncate">
-                {config.alamat}
+                {config?.alamat}
               </p>
             </div>
 
@@ -213,14 +213,14 @@ export const StudentCardView: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 pt-1">
-                  Wali Murid: {currentStudent.namaWali || '-'}
+                  Wali Murid: {currentStudent.nama_wali || '-'}
                 </p>
               </div>
 
               <div className="mt-6 pt-3 border-t border-slate-100 w-full flex items-center justify-between text-[9px] text-slate-400 font-mono">
-                <span>NSM: {config.nsm}</span>
+                <span>NSM: {config?.nsm}</span>
                 <span>AUTHENTIC DIGITAL ID</span>
-                <span>NPSM: {config.npsm || config.npsn}</span>
+                <span>NPSM: {config?.npsm || config?.npsn}</span>
               </div>
             </div>
           </div>
@@ -254,16 +254,16 @@ export const StudentCardView: React.FC = () => {
               className="bg-white border-2 border-slate-300 rounded-xl overflow-hidden shadow-2xs card-print flex flex-col justify-between"
             >
               <div className="bg-emerald-800 p-2 text-white text-center flex items-center justify-center gap-2">
-                {config.logo && (
+                {config?.logo && (
                   <img
-                    src={config.logo}
+                    src={config?.logo}
                     alt="Logo"
                     className="w-6 h-6 object-contain bg-white rounded-full p-0.5 shrink-0"
                   />
                 )}
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-tight leading-tight">
-                    {config.nama}
+                    {config?.nama}
                   </p>
                   <p className="text-[9px] text-emerald-200">
                     KARTU PRESENSI • {st.rombel}
@@ -294,7 +294,7 @@ export const StudentCardView: React.FC = () => {
                 </div>
               </div>
               <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 text-center text-[9px] text-slate-500 font-mono">
-                {config.nsm} • T.P 2026/2027
+                {config?.nsm} • T.P 2026/2027
               </div>
             </div>
           ))}

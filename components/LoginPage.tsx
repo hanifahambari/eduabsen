@@ -62,7 +62,7 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleCredentialLogin = (e: React.FormEvent) => {
+  const handleCredentialLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -79,7 +79,7 @@ export const LoginPage: React.FC = () => {
     saveRememberMe();
 
     setLoading(true);
-    const result = loginWithCredential(identifier, password);
+    const result = await loginWithCredential(identifier, password);
     setLoading(false);
 
     if (result.success) {
@@ -102,7 +102,7 @@ export const LoginPage: React.FC = () => {
         <div className="bg-gradient-to-r from-emerald-800 to-teal-800 p-6 text-white">
           <div className="flex items-center gap-3 justify-center">
             <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-xs">
-              {config.logo ? (
+              {config?.logo ? (
                 <img
                   src={config.logo}
                   alt={config.nama}
@@ -117,7 +117,7 @@ export const LoginPage: React.FC = () => {
                 Portal Masuk Madrasah
               </h1>
               <p className="text-xs text-emerald-100 font-normal mt-0.5">
-                {config.nama}
+                {config?.nama}
               </p>
 </div>
           </div>

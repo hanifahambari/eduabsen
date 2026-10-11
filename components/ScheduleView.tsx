@@ -46,16 +46,16 @@ export const ScheduleView: React.FC = () => {
   const isEditable = currentUser.role === 'admin';
 
   // Schedule form state
-  const [jamMasukGuru, setJamMasukGuru] = useState(schedule.jamMasukGuru);
-  const [batasTerlambatGuru, setBatasTerlambatGuru] = useState(schedule.batasTerlambatGuru);
-  const [jamPulangGuru, setJamPulangGuru] = useState(schedule.jamPulangGuru);
-  const [jamMasukSiswa, setJamMasukSiswa] = useState(schedule.jamMasukSiswa);
-  const [batasTerlambatSiswa, setBatasTerlambatSiswa] = useState(schedule.batasTerlambatSiswa);
-  const [jamPulangSiswa, setJamPulangSiswa] = useState(schedule.jamPulangSiswa);
+  const [jam_masuk_guru, setjam_masuk_guru] = useState(schedule?.jam_masuk_guru);
+  const [batas_terlambat_guru, setbatas_terlambat_guru] = useState(schedule?.batas_terlambat_guru);
+  const [jam_pulang_guru, setjam_pulang_guru] = useState(schedule?.jam_pulang_guru);
+  const [jam_masuk_siswa, setjam_masuk_siswa] = useState(schedule?.jam_masuk_siswa);
+  const [batas_terlambat_siswa, setbatas_terlambat_siswa] = useState(schedule?.batas_terlambat_siswa);
+  const [jam_pulang_siswa, setjam_pulang_siswa] = useState(schedule?.jam_pulang_siswa);
 
   // Active days: [6, 0, 1, 2, 3, 4] (Sabtu, Ahad, Senin, Selasa, Rabu, Kamis)
-  const [hariKerja, setHariKerja] = useState<number[]>(
-    schedule.hariKerja || [6, 0, 1, 2, 3, 4]
+  const [hari_kerja, sethari_kerja] = useState<number[]>(
+    schedule?.hari_kerja || [6, 0, 1, 2, 3, 4]
   );
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -74,12 +74,12 @@ export const ScheduleView: React.FC = () => {
   // Active madrasah work day indices in sequence: Sabtu(6), Ahad(0), Senin(1), Selasa(2), Rabu(3), Kamis(4)
   const MADRASAH_WORK_DAYS = [6, 0, 1, 2, 3, 4];
 
-  const toggleDay = (dayIndex: number) => {
+  const toggleDay = (day_index: number) => {
     if (!isEditable) return;
-    setHariKerja((prev) =>
-      prev.includes(dayIndex)
-        ? prev.filter((d) => d !== dayIndex)
-        : [...prev, dayIndex]
+    sethari_kerja((prev) =>
+      prev.includes(day_index)
+        ? prev.filter((d) => d !== day_index)
+        : [...prev, day_index]
     );
   };
 
@@ -87,19 +87,19 @@ export const ScheduleView: React.FC = () => {
     e.preventDefault();
     if (!isEditable) return;
     updateSchedule({
-      jamMasukGuru,
-      batasTerlambatGuru,
-      jamPulangGuru,
-      jamMasukSiswa,
-      batasTerlambatSiswa,
-      jamPulangSiswa,
-      hariKerja,
+      jam_masuk_guru,
+      batas_terlambat_guru,
+      jam_pulang_guru,
+      jam_masuk_siswa,
+      batas_terlambat_siswa,
+      jam_pulang_siswa,
+      hari_kerja,
     });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  const todayDayName = getDayNameFromDate(currentDate);
+  const todayday_name = getDayNameFromDate(currentDate);
   const isTodayJumat = isWeeklyHoliday(currentDate);
 
   const handleAddHoliday = (e: React.FormEvent) => {
@@ -118,28 +118,28 @@ export const ScheduleView: React.FC = () => {
   const handleOpenEditTeacher = (teacher: Teacher) => {
     setSelectedTeacherForEdit(teacher);
     // Build schedules for all 6 active days
-    const current = teacher.jadwalKhusus || [];
+    const current = teacher.jadwal_khusus || [];
     const populated: TeacherDaySchedule[] = MADRASAH_WORK_DAYS.map((dayIdx) => {
-      const existing = current.find((c) => c.dayIndex === dayIdx);
+      const existing = current.find((c) => c.day_index === dayIdx);
       if (existing) {
         return { ...existing };
       }
       return {
-        dayIndex: dayIdx,
+        day_index: dayIdx,
         aktif: true,
-        isOverride: false,
-        jamMasuk: schedule.jamMasukGuru,
-        batasTerlambat: schedule.batasTerlambatGuru,
-        jamPulang: schedule.jamPulangGuru,
+        is_override: false,
+        jam_masuk: schedule?.jam_masuk_guru || null,
+        batas_terlambat: schedule?.batas_terlambat_guru || null,
+        jam_pulang: schedule?.jam_pulang_guru || null,
       };
     });
     setEditingSchedules(populated);
   };
 
   // Modify schedule item in modal
-  const handleUpdateEditingDay = (dayIndex: number, updates: Partial<TeacherDaySchedule>) => {
+  const handleUpdateEditingDay = (day_index: number, updates: Partial<TeacherDaySchedule>) => {
     setEditingSchedules((prev) =>
-      prev.map((item) => (item.dayIndex === dayIndex ? { ...item, ...updates } : item))
+      prev.map((item) => (item.day_index === day_index ? { ...item, ...updates } : item))
     );
   };
 
@@ -149,10 +149,10 @@ export const ScheduleView: React.FC = () => {
       prev.map((item) => ({
         ...item,
         aktif: true,
-        isOverride: false,
-        jamMasuk: schedule.jamMasukGuru,
-        batasTerlambat: schedule.batasTerlambatGuru,
-        jamPulang: schedule.jamPulangGuru,
+        is_override: false,
+        jam_masuk: schedule?.jam_masuk_guru || null,
+        batas_terlambat: schedule?.batas_terlambat_guru || null,
+        jam_pulang: schedule?.jam_pulang_guru || null,
       }))
     );
   };
@@ -161,7 +161,7 @@ export const ScheduleView: React.FC = () => {
   const handleSaveTeacherSchedule = () => {
     if (!selectedTeacherForEdit || !isEditable) return;
     updateTeacher(selectedTeacherForEdit.id, {
-      jadwalKhusus: editingSchedules,
+      jadwal_khusus: editingSchedules,
     });
     setTeacherSaveSuccess(`Jadwal kerja untuk ${selectedTeacherForEdit.nama} berhasil diperbarui.`);
     setSelectedTeacherForEdit(null);
@@ -177,11 +177,11 @@ export const ScheduleView: React.FC = () => {
     if (!matchSearch) return false;
 
     if (filterOverride === 'OVERRIDE_ONLY') {
-      const hasOverride = t.jadwalKhusus?.some((j) => j.isOverride || !j.aktif);
+      const hasOverride = t.jadwal_khusus?.some((j) => j.is_override || !j.aktif);
       return Boolean(hasOverride);
     }
     if (filterOverride === 'STANDARD_ONLY') {
-      const hasOverride = t.jadwalKhusus?.some((j) => j.isOverride || !j.aktif);
+      const hasOverride = t.jadwal_khusus?.some((j) => j.is_override || !j.aktif);
       return !hasOverride;
     }
     return true;
@@ -251,7 +251,7 @@ export const ScheduleView: React.FC = () => {
             <CheckCircle className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           <span>
-            <strong>Status Hari Ini ({todayDayName}):</strong>{' '}
+            <strong>Status Hari Ini ({todayday_name}):</strong>{' '}
             {isTodayJumat
               ? "Hari Libur Rutin Mingguan Madrasah (Jum'at). Presensi tidak diwajibkan dan proses tutup hari tidak membuat Alpa otomatis."
               : 'Hari Aktif Madrasah (Sabtu s.d. Kamis). Presensi guru & siswa aktif sesuai jadwal masing-masing.'}
@@ -301,8 +301,8 @@ export const ScheduleView: React.FC = () => {
                     <input
                       type="time"
                       disabled={!isEditable}
-                      value={jamMasukGuru}
-                      onChange={(e) => setJamMasukGuru(e.target.value)}
+                      value={jam_masuk_guru}
+                      onChange={(e) => setjam_masuk_guru(e.target.value)}
                       className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg disabled:bg-slate-50"
                     />
                   </div>
@@ -313,8 +313,8 @@ export const ScheduleView: React.FC = () => {
                     <input
                       type="time"
                       disabled={!isEditable}
-                      value={batasTerlambatGuru}
-                      onChange={(e) => setBatasTerlambatGuru(e.target.value)}
+                      value={batas_terlambat_guru}
+                      onChange={(e) => setbatas_terlambat_guru(e.target.value)}
                       className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg disabled:bg-slate-50 text-red-600 font-bold"
                     />
                   </div>
@@ -325,8 +325,8 @@ export const ScheduleView: React.FC = () => {
                     <input
                       type="time"
                       disabled={!isEditable}
-                      value={jamPulangGuru}
-                      onChange={(e) => setJamPulangGuru(e.target.value)}
+                      value={jam_pulang_guru}
+                      onChange={(e) => setjam_pulang_guru(e.target.value)}
                       className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg disabled:bg-slate-50"
                     />
                   </div>
@@ -348,8 +348,8 @@ export const ScheduleView: React.FC = () => {
                       <input
                         type="time"
                         disabled={!isEditable}
-                        value={jamMasukSiswa}
-                        onChange={(e) => setJamMasukSiswa(e.target.value)}
+                        value={jam_masuk_siswa}
+                        onChange={(e) => setjam_masuk_siswa(e.target.value)}
                         className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg disabled:bg-slate-50"
                       />
                     </div>
@@ -360,8 +360,8 @@ export const ScheduleView: React.FC = () => {
                       <input
                         type="time"
                         disabled={!isEditable}
-                        value={batasTerlambatSiswa}
-                        onChange={(e) => setBatasTerlambatSiswa(e.target.value)}
+                        value={batas_terlambat_siswa}
+                        onChange={(e) => setbatas_terlambat_siswa(e.target.value)}
                         className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg disabled:bg-slate-50 text-red-600 font-bold"
                       />
                     </div>
@@ -372,8 +372,8 @@ export const ScheduleView: React.FC = () => {
                       <input
                         type="time"
                         disabled={!isEditable}
-                        value={jamPulangSiswa}
-                        onChange={(e) => setJamPulangSiswa(e.target.value)}
+                        value={jam_pulang_siswa}
+                        onChange={(e) => setjam_pulang_siswa(e.target.value)}
                         className="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg disabled:bg-slate-50"
                       />
                     </div>
@@ -393,13 +393,13 @@ export const ScheduleView: React.FC = () => {
                       </p>
                     </div>
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      {hariKerja.length} Hari Aktif
+                      {hari_kerja.length} Hari Aktif
                     </span>
                   </div>
 
                   <div className="grid grid-cols-7 gap-1.5 pt-1">
                     {MADRASAH_DAYS_CONFIG.map((day) => {
-                      const isActive = hariKerja.includes(day.dayIndex);
+                      const isActive = hari_kerja.includes(day.dayIndex);
                       const isJumat = day.dayIndex === 5;
                       return (
                         <button
@@ -582,7 +582,7 @@ export const ScheduleView: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-500">
-                  Standar Madrasah: <strong className="text-slate-800 font-mono">{schedule.jamMasukGuru} - {schedule.jamPulangGuru} WIB</strong>
+                  Standar Madrasah: <strong className="text-slate-800 font-mono">{schedule?.jam_masuk_guru} - {schedule?.jam_pulang_guru} WIB</strong>
                 </span>
               </div>
             </div>
@@ -653,7 +653,7 @@ export const ScheduleView: React.FC = () => {
                       getTeacherEffectiveSchedule(teacher, dayIdx, schedule)
                     );
                     const totalActiveDays = daysSchedules.filter((d) => d.aktif).length;
-                    const hasAnyOverride = daysSchedules.some((d) => d.isOverride || !d.aktif);
+                    const hasAnyOverride = daysSchedules.some((d) => d.is_override || !d.aktif);
 
                     return (
                       <React.Fragment key={teacher.id}>
@@ -661,7 +661,7 @@ export const ScheduleView: React.FC = () => {
                           const isFirstDay = dIdx === 0;
                           return (
                             <tr
-                              key={`${teacher.id}-${daySched.dayIndex}`}
+                              key={`${teacher.id}-${daySched.day_index}`}
                               className={`hover:bg-slate-50/70 transition-colors ${
                                 isFirstDay && tIdx > 0 ? 'border-t-2 border-slate-200' : ''
                               }`}
@@ -723,12 +723,12 @@ export const ScheduleView: React.FC = () => {
 
                               {/* Hari Aktif */}
                               <td className="py-2.5 px-3 font-semibold text-slate-900">
-                                {daySched.dayName}
+                                {daySched.day_name}
                               </td>
 
                               {/* Jadwal Standar */}
                               <td className="py-2.5 px-3 text-slate-500 font-mono text-[11px]">
-                                {schedule.jamMasukGuru} - {schedule.jamPulangGuru} WIB
+                                {schedule?.jam_masuk_guru} - {schedule?.jam_pulang_guru} WIB
                               </td>
 
                               {/* Masuk */}
@@ -736,10 +736,10 @@ export const ScheduleView: React.FC = () => {
                                 {daySched.aktif ? (
                                   <span
                                     className={
-                                      daySched.isOverride ? 'text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded' : 'text-slate-800'
+                                      daySched.is_override ? 'text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded' : 'text-slate-800'
                                     }
                                   >
-                                    {daySched.jamMasuk} WIB
+                                    {daySched.jam_masuk} WIB
                                   </span>
                                 ) : (
                                   <span className="text-slate-300 font-normal">-</span>
@@ -751,10 +751,10 @@ export const ScheduleView: React.FC = () => {
                                 {daySched.aktif ? (
                                   <span
                                     className={
-                                      daySched.isOverride ? 'text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded' : 'text-slate-800'
+                                      daySched.is_override ? 'text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded' : 'text-slate-800'
                                     }
                                   >
-                                    {daySched.jamPulang} WIB
+                                    {daySched.jam_pulang} WIB
                                   </span>
                                 ) : (
                                   <span className="text-slate-300 font-normal">-</span>
@@ -763,7 +763,7 @@ export const ScheduleView: React.FC = () => {
 
                               {/* Override? */}
                               <td className="py-2.5 px-3 text-center">
-                                {daySched.isOverride ? (
+                                {daySched.is_override ? (
                                   <span className="inline-flex items-center gap-1 font-bold text-indigo-700 text-xs">
                                     <span>★</span>
                                     <span className="text-[10px] hidden sm:inline">Khusus</span>
@@ -830,7 +830,7 @@ export const ScheduleView: React.FC = () => {
             <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
               <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
                 <span className="text-slate-600">
-                  Jadwal Standar Madrasah: <strong className="font-mono text-slate-900">{schedule.jamMasukGuru} - {schedule.jamPulangGuru} WIB</strong>
+                  Jadwal Standar Madrasah: <strong className="font-mono text-slate-900">{schedule?.jam_masuk_guru} - {schedule?.jam_pulang_guru} WIB</strong>
                 </span>
                 <button
                   type="button"
@@ -845,14 +845,14 @@ export const ScheduleView: React.FC = () => {
               {/* Day-by-Day Schedule Form */}
               <div className="space-y-3">
                 {editingSchedules.map((item) => {
-                  const dayName = DAYS_ID[item.dayIndex];
+                  const day_name = DAYS_ID[item.day_index];
                   return (
                     <div
-                      key={item.dayIndex}
+                      key={item.day_index}
                       className={`p-3.5 rounded-xl border transition-all ${
                         !item.aktif
                           ? 'bg-slate-50/70 border-slate-200 opacity-75'
-                          : item.isOverride
+                          : item.is_override
                           ? 'bg-indigo-50/40 border-indigo-200 shadow-2xs'
                           : 'bg-white border-slate-200'
                       }`}
@@ -860,11 +860,11 @@ export const ScheduleView: React.FC = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100">
                         <div className="flex items-center gap-2">
                           <span className="w-20 font-bold text-xs text-slate-900">
-                            {dayName}
+                            {day_name}
                           </span>
                           <button
                             type="button"
-                            onClick={() => handleUpdateEditingDay(item.dayIndex, { aktif: !item.aktif })}
+                            onClick={() => handleUpdateEditingDay(item.day_index, { aktif: !item.aktif })}
                             className={`px-2.5 py-1 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
                               item.aktif
                                 ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
@@ -880,9 +880,9 @@ export const ScheduleView: React.FC = () => {
                             <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
                               <input
                                 type="radio"
-                                name={`override-${item.dayIndex}`}
-                                checked={!item.isOverride}
-                                onChange={() => handleUpdateEditingDay(item.dayIndex, { isOverride: false })}
+                                name={`override-${item.day_index}`}
+                                checked={!item.is_override}
+                                onChange={() => handleUpdateEditingDay(item.day_index, { is_override: false })}
                                 className="text-emerald-600 focus:ring-emerald-500"
                               />
                               <span>Jadwal Standar</span>
@@ -890,14 +890,14 @@ export const ScheduleView: React.FC = () => {
                             <label className="flex items-center gap-1.5 cursor-pointer font-bold text-indigo-700">
                               <input
                                 type="radio"
-                                name={`override-${item.dayIndex}`}
-                                checked={item.isOverride}
+                                name={`override-${item.day_index}`}
+                                checked={item.is_override}
                                 onChange={() =>
-                                  handleUpdateEditingDay(item.dayIndex, {
-                                    isOverride: true,
-                                    jamMasuk: item.jamMasuk || '08:00',
-                                    batasTerlambat: item.batasTerlambat || '08:15',
-                                    jamPulang: item.jamPulang || '13:00',
+                                  handleUpdateEditingDay(item.day_index, {
+                                    is_override: true,
+                                    jam_masuk: item.jam_masuk || '08:00',
+                                    batas_terlambat: item.batas_terlambat || '08:15',
+                                    jam_pulang: item.jam_pulang || '13:00',
                                   })
                                 }
                                 className="text-indigo-600 focus:ring-indigo-500"
@@ -909,7 +909,7 @@ export const ScheduleView: React.FC = () => {
                       </div>
 
                       {/* Override Inputs */}
-                      {item.aktif && item.isOverride ? (
+                      {item.aktif && item.is_override ? (
                         <div className="mt-2.5 grid grid-cols-3 gap-2.5 pt-1">
                           <div>
                             <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
@@ -917,9 +917,9 @@ export const ScheduleView: React.FC = () => {
                             </label>
                             <input
                               type="time"
-                              value={item.jamMasuk || schedule.jamMasukGuru}
+                              value={item.jam_masuk || schedule?.jam_masuk_guru}
                               onChange={(e) =>
-                                handleUpdateEditingDay(item.dayIndex, { jamMasuk: e.target.value })
+                                handleUpdateEditingDay(item.day_index, { jam_masuk: e.target.value })
                               }
                               className="w-full text-xs font-mono px-2.5 py-1.5 bg-white border border-slate-300 rounded font-bold text-slate-800"
                             />
@@ -930,9 +930,9 @@ export const ScheduleView: React.FC = () => {
                             </label>
                             <input
                               type="time"
-                              value={item.batasTerlambat || schedule.batasTerlambatGuru}
+                              value={item.batas_terlambat || schedule?.batas_terlambat_guru}
                               onChange={(e) =>
-                                handleUpdateEditingDay(item.dayIndex, { batasTerlambat: e.target.value })
+                                handleUpdateEditingDay(item.day_index, { batas_terlambat: e.target.value })
                               }
                               className="w-full text-xs font-mono px-2.5 py-1.5 bg-white border border-slate-300 rounded font-bold text-red-600"
                             />
@@ -943,9 +943,9 @@ export const ScheduleView: React.FC = () => {
                             </label>
                             <input
                               type="time"
-                              value={item.jamPulang || schedule.jamPulangGuru}
+                              value={item.jam_pulang || schedule?.jam_pulang_guru}
                               onChange={(e) =>
-                                handleUpdateEditingDay(item.dayIndex, { jamPulang: e.target.value })
+                                handleUpdateEditingDay(item.day_index, { jam_pulang: e.target.value })
                               }
                               className="w-full text-xs font-mono px-2.5 py-1.5 bg-white border border-slate-300 rounded font-bold text-slate-800"
                             />
@@ -954,7 +954,7 @@ export const ScheduleView: React.FC = () => {
                       ) : item.aktif ? (
                         <div className="mt-1.5 text-[11px] text-slate-500 flex items-center justify-between">
                           <span>Mengikuti jadwal standar madrasah</span>
-                          <span className="font-mono">{schedule.jamMasukGuru} - {schedule.jamPulangGuru} WIB (Batas: {schedule.batasTerlambatGuru})</span>
+                          <span className="font-mono">{schedule?.jam_masuk_guru} - {schedule?.jam_pulang_guru} WIB (Batas: {schedule?.batas_terlambat_guru})</span>
                         </div>
                       ) : (
                         <div className="mt-1 text-[11px] text-slate-400 italic">
