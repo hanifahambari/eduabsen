@@ -1,5 +1,9 @@
-﻿import type { VercelRequest, VercelResponse } from "./_lib/vercelTypes";
-import { supabaseAdmin } from './_lib/supabaseAdmin';
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  auth: { autoRefreshToken: false, persistSession: false }
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id, target_type, target_id, status } = req.query;
@@ -83,5 +87,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
-
-
