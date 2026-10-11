@@ -1,5 +1,5 @@
-﻿import type { VercelRequest, VercelResponse } from "./_lib/vercelTypes";
-import { supabaseAdmin } from './_lib/supabaseAdmin';
+﻿import type { VercelRequest, VercelResponse } from "../_lib/vercelTypes";
+import { supabaseAdmin } from '../_lib/supabaseAdmin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -44,4 +44,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Failed to fetch stats' });
   }
 }
+
+
 
